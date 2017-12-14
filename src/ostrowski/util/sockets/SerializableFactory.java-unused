@@ -1,0 +1,147 @@
+/*
+ * Created on May 10, 2006
+ *
+ */
+package ostrowski.util.sockets;
+
+import java.io.DataInputStream;
+import java.util.HashMap;
+
+import ostrowski.combat.common.Advantage;
+import ostrowski.combat.common.Character;
+import ostrowski.combat.common.CombatMap;
+import ostrowski.combat.common.Condition;
+import ostrowski.combat.common.DiceSet;
+import ostrowski.combat.common.Hand;
+import ostrowski.combat.common.Leg;
+import ostrowski.combat.common.Skill;
+import ostrowski.combat.common.spells.mage.MageSpell;
+import ostrowski.combat.common.spells.priest.PriestSpell;
+import ostrowski.combat.common.things.Armor;
+import ostrowski.combat.common.things.Door;
+import ostrowski.combat.common.things.MissileWeapon;
+import ostrowski.combat.common.things.Potion;
+import ostrowski.combat.common.things.Shield;
+import ostrowski.combat.common.things.Weapon;
+import ostrowski.combat.protocol.BeginBattle;
+import ostrowski.combat.protocol.ClientID;
+import ostrowski.combat.protocol.EnterArena;
+import ostrowski.combat.protocol.MapVisibility;
+import ostrowski.combat.protocol.MessageText;
+import ostrowski.combat.protocol.ObjectChanged;
+import ostrowski.combat.protocol.ObjectDelete;
+import ostrowski.combat.protocol.ObjectInfo;
+import ostrowski.combat.protocol.Response;
+import ostrowski.combat.protocol.SerializableObject;
+import ostrowski.combat.protocol.ServerStatus;
+import ostrowski.combat.protocol.TargetPriorities;
+import ostrowski.combat.protocol.request.RequestAction;
+import ostrowski.combat.protocol.request.RequestAttackStyle;
+import ostrowski.combat.protocol.request.RequestDefense;
+import ostrowski.combat.protocol.request.RequestEquipment;
+import ostrowski.combat.protocol.request.RequestLocation;
+import ostrowski.combat.protocol.request.RequestMovement;
+import ostrowski.combat.protocol.request.RequestPosition;
+import ostrowski.combat.protocol.request.RequestSpellSelection;
+import ostrowski.combat.protocol.request.RequestSpellTypeSelection;
+import ostrowski.combat.protocol.request.RequestTarget;
+import ostrowski.combat.server.ArenaLocation;
+
+
+public class SerializableFactory
+{
+   static HashMap<String, Class< ? >> _classMap = new HashMap<String, Class< ? >>();
+   static HashMap<Class< ? >, String > _keyMap   = new HashMap<Class< ? >, String>();
+   static {
+      registerClass("String", String.class);
+      registerClass("Advant", Advantage.class);
+      registerClass("AreLoc", ArenaLocation.class);
+      registerClass("BegBat", BeginBattle.class);
+      registerClass("Charac", Character.class);
+      registerClass("CmbMap", CombatMap.class);
+      registerClass("ClinID", ClientID.class);
+      registerClass("Condit", Condition.class);
+      registerClass("DieSet", DiceSet.class);
+      registerClass("EntAre", EnterArena.class);
+      registerClass("Hand..", Hand.class);
+      registerClass("Leg...", Leg.class);
+      registerClass("MapVis", MapVisibility.class);
+      registerClass("MesTxt", MessageText.class);
+      registerClass("ObjChg", ObjectChanged.class);
+      registerClass("ObjDel", ObjectDelete.class);
+      registerClass("ObjInf", ObjectInfo.class);
+      registerClass("SrvSts", ServerStatus.class);
+      registerClass("Skill.", Skill.class);
+      registerClass("SpellM", MageSpell.class);
+      registerClass("SpellP", PriestSpell.class);
+      registerClass("ReqAct", RequestAction.class);
+      registerClass("ReqSty", RequestAttackStyle.class);
+      registerClass("ReqDef", RequestDefense.class);
+      registerClass("ReqEqu", RequestEquipment.class);
+      registerClass("ReqLoc", RequestLocation.class);
+      registerClass("ReqMov", RequestMovement.class);
+      registerClass("ReqPos", RequestPosition.class);
+      registerClass("ReqTrg", RequestTarget.class);
+      registerClass("ReqSpT", RequestSpellTypeSelection.class);
+      registerClass("ReqSpl", RequestSpellSelection.class);
+      registerClass("Respns", Response.class);
+      registerClass("TrgPri", TargetPriorities.class);
+      registerClass("Armor.", Armor.class);
+      registerClass("Door..", Door.class);
+      registerClass("Potion", Potion.class);
+      registerClass("Shield", Shield.class);
+      registerClass("Weapon", Weapon.class);
+      registerClass("MisWea", MissileWeapon.class);
+   }
+   public static void registerClass(String key, Class< ? > cls) {
+      try {
+         // make sure we can instanciate a new instance without any parameters.
+         cls.newInstance();
+         if (_classMap.get(key) != null) {
+            throw new IllegalArgumentException("Key " + key + " already used for " + _classMap.get(key));
+         }
+         if (_keyMap.get(cls) != null) {
+            throw new IllegalArgumentException("class " + cls + " already mapped with key " + _keyMap.get(cls));
+         }
+      } catch (InstantiationException e) {
+         e.printStackTrace();
+      } catch (IllegalAccessException e) {
+         e.printStackTrace();
+      } catch (IllegalArgumentException e) {
+         e.printStackTrace();
+      }
+      
+      _classMap.put(key, cls);
+      _keyMap.put(cls, key);
+   }
+   public static String getKey(SerializableObject serObj) {
+      String res = (_keyMap.get(serObj.getClass()));
+      if (res == null) {
+         throw new UnsupportedOperationException("class " + serObj.getClass().getName() + " is not registered in factory map.");
+      }
+      return res;
+   }
+
+   public static SerializableObject readObject(String eventID, DataInputStream inMsg)
+   {
+      Class<?> objClass = _classMap.get(eventID);
+      if (objClass != null)
+      {
+         try {
+            Object newObj = objClass.newInstance();
+            if (newObj instanceof SerializableObject) {
+               SerializableObject newSerObj = (SerializableObject) newObj;
+               newSerObj.serializeFromStream(inMsg);
+               return newSerObj;
+            }
+            System.err.println("object " + newObj.getClass().toString()
+                               + " is not derived from SerializableObject!");
+         } catch (InstantiationException e) {
+            e.printStackTrace();
+         } catch (IllegalAccessException e) {
+            e.printStackTrace();
+         }
+      }
+      return null;
+   }
+}
