@@ -181,7 +181,7 @@ public class AnglePair implements Comparable<AnglePair> {
 
    @Override
    public int hashCode() {
-      return new Double(this._startAngle).hashCode() ^ new Double(this._stopAngle).hashCode();
+      return Double.valueOf(this._startAngle).hashCode() ^ Double.valueOf(this._stopAngle).hashCode();
    }
 
    public double diff(AnglePair otherAP) {

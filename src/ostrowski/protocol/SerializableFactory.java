@@ -1,6 +1,7 @@
 package ostrowski.protocol;
 
 import java.io.DataInputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 
@@ -25,7 +26,7 @@ public class SerializableFactory
       boolean success = false;
       try {
          // make sure we can instantiate a new instance without any parameters.
-         cls.newInstance();
+         cls.getDeclaredConstructor().newInstance();
          if (_classMap.get(key) != null) {
             throw new IllegalArgumentException("Key " + key + " already used for " + _classMap.get(key));
          }
@@ -33,11 +34,7 @@ public class SerializableFactory
             throw new IllegalArgumentException("class " + cls + " already mapped with key " + _keyMap.get(cls));
          }
          success = true;
-      } catch (InstantiationException e) {
-         e.printStackTrace();
-      } catch (IllegalAccessException e) {
-         e.printStackTrace();
-      } catch (IllegalArgumentException e) {
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
          e.printStackTrace();
       }
       if (!success) {
@@ -69,7 +66,7 @@ public class SerializableFactory
       if (objClass != null)
       {
          try {
-            Object newObj = objClass.newInstance();
+            Object newObj = objClass.getDeclaredConstructor().newInstance();
             if (newObj instanceof SerializableObject) {
                SerializableObject newSerObj = (SerializableObject) newObj;
                newSerObj.serializeFromStream(inMsg);
@@ -88,9 +85,7 @@ public class SerializableFactory
             }
             System.err.println("object " + newObj.getClass().toString()
                                + " is not derived from SerializableObject!");
-         } catch (InstantiationException e) {
-            e.printStackTrace();
-         } catch (IllegalAccessException e) {
+         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
          }
       }

@@ -103,7 +103,7 @@ public abstract class SerializableObject
    public static short   readShort  (DataInputStream in) throws IOException { return in.readShort();}
    public static byte    readByte   (DataInputStream in) throws IOException { return in.readByte();}
    public static boolean readBoolean(DataInputStream in) throws IOException { return in.readBoolean();}
-   public static Integer readInteger(DataInputStream in) throws IOException { return new Integer(in.readInt());}
+   public static Integer readInteger(DataInputStream in) throws IOException { return Integer.valueOf(in.readInt());}
 
    // List serialization (can contain Strings, Integer or SerializableObjects objects)
    public static void writeToStream(List<? extends Object> data, DataOutputStream out) throws IOException {
@@ -144,7 +144,7 @@ public abstract class SerializableObject
       data.clear();
       int size = in.readShort();
       for (int i=0 ; i<size ; i++) {
-         data.add(new Integer(in.readInt()));
+         data.add(Integer.valueOf(in.readInt()));
       }
       return size;
    }
@@ -153,7 +153,7 @@ public abstract class SerializableObject
       data.clear();
       int size = in.readShort();
       for (int i=0 ; i<size ; i++) {
-         data.add(new Byte(in.readByte()));
+         data.add(Byte.valueOf(in.readByte()));
       }
       return size;
    }
@@ -162,7 +162,7 @@ public abstract class SerializableObject
       data.clear();
       int size = in.readShort();
       for (int i=0 ; i<size ; i++) {
-         data.add(new Boolean(in.readBoolean()));
+         data.add(Boolean.valueOf(in.readBoolean()));
       }
       return size;
    }

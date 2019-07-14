@@ -131,11 +131,11 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
                currentCount = _watchers.get(watcherObject);
                if (currentCount == null) {
                   // This is the first time this watcher is registering as watching this object
-                  currentCount = new Integer(1);
+                  currentCount = Integer.valueOf(1);
                   alreadyWatching = false;
                }
                else {
-                  currentCount = new Integer(currentCount.intValue() + 1);
+                  currentCount = Integer.valueOf(currentCount.intValue() + 1);
                   alreadyWatching = true;
                }
                _watchers.put(watcherObject, currentCount);
@@ -238,10 +238,10 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
                if (currentCount != null) {
 
                   if (removeAllInstancesOfWatcher) {
-                     currentCount = new Integer(0);
+                     currentCount = Integer.valueOf(0);
                   }
                   else {
-                     currentCount = new Integer(currentCount.intValue() - 1);
+                     currentCount = Integer.valueOf(currentCount.intValue() - 1);
                   }
                   if (currentCount.intValue() <= 0) {
                      // When the occurrence count goes to zero, remove it from the list

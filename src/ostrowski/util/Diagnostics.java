@@ -450,14 +450,14 @@ public class Diagnostics {
                occuranceCount = valueTable.get(itemValue);
             }
             if (occuranceCount == null) {
-               occuranceCount = new Integer(1);
+               occuranceCount = Integer.valueOf(1);
                // If this is the first record of this value,
                // clear out the pre-build association string so we force
                // the association string to be re-built next time its used.
                _prebuiltAssociations = null;
             }
             else {
-               occuranceCount = new Integer(occuranceCount.intValue() + 1);
+               occuranceCount = Integer.valueOf(occuranceCount.intValue() + 1);
 //               duplicateAssociation = true;
             }
             valueTable.put(itemValue, occuranceCount);
@@ -487,7 +487,7 @@ public class Diagnostics {
                      _prebuiltAssociations = null;
                   }
                   else {
-                     occuranceCount = new Integer(occuranceCount.intValue() - 1);
+                     occuranceCount = Integer.valueOf(occuranceCount.intValue() - 1);
                      valueTable.put(itemValue, occuranceCount);
                   }
                }
