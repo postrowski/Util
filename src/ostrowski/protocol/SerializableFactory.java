@@ -70,17 +70,6 @@ public class SerializableFactory
             if (newObj instanceof SerializableObject) {
                SerializableObject newSerObj = (SerializableObject) newObj;
                newSerObj.serializeFromStream(inMsg);
-               // If this object should be a singleton for each instance, don't create a new one
-               // on serialization, instead find the existing one, and copy the serialized data into it.
-               if (newSerObj instanceof ISingularSerializableObject) {
-                  ISingularSerializableObject singleObj = (ISingularSerializableObject)newSerObj;
-                  ISingularSerializableObject existingObj = singleObj.findExistingObject();
-                  if (existingObj != null) {
-                     existingObj.copyDataFrom(newSerObj);
-                     return (SerializableObject) existingObj;
-                  }
-                  singleObj.plantInitialObject();
-               }
                return newSerObj;
             }
             System.err.println("object " + newObj.getClass().toString()

@@ -8,7 +8,7 @@ import java.util.List;
 
 import ostrowski.DebugBreak;
 
-public abstract class SerializableObject
+public abstract class SerializableObject implements Cloneable
 {
    static final String  _charEncoding          = "ISO-8859-1"; // "ISO Latin Alphabet No. 1, a.k.a. ISO-LATIN-1";
 

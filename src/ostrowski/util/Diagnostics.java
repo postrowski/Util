@@ -277,16 +277,20 @@ public class Diagnostics {
          _unnamedPartOfNamedOperation = false;
       }
       @Override
-      public Object clone() {
-         DiagnosticAssociations clone = new DiagnosticAssociations();
-         clone.setData(this);
+      public DiagnosticAssociations clone() {
+         DiagnosticAssociations clone = null;
+         try {
+            clone = (DiagnosticAssociations) super.clone();
+            clone.setData(this);
+         } catch (CloneNotSupportedException e) {
+         }
          return clone;
       }
       @SuppressWarnings("unchecked")
       public void setData(DiagnosticAssociations newData) {
          if (newData != null) {
             _associationTable            = (Hashtable<String, Hashtable<String, Integer>>)(newData._associationTable.clone());
-            _prebuiltAssociations        = (newData._prebuiltAssociations == null) ? null : new String(newData._prebuiltAssociations);
+            _prebuiltAssociations        = newData._prebuiltAssociations;
             _operationIDsList            = (Vector<String>)(newData._operationIDsList.clone());
             _operationNamesList          = (Vector<String>)(newData._operationNamesList.clone());
             _unnamedPartOfNamedOperation = newData._unnamedPartOfNamedOperation;

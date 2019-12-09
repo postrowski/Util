@@ -63,7 +63,7 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
 
    @Override
    @SuppressWarnings("unchecked")
-   public Object clone() {
+   public MonitoredObject clone() {
       MonitoredObject clone;
       if (_watchedProxy != this) {
          clone = new MonitoredObject(_objectIDString, _watchedProxy);
