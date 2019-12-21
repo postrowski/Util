@@ -54,4 +54,9 @@ public class ObjectChanged extends SerializableObject
       return _modifiedObject;
    }
 
+   @Override
+   public String toString() {
+      return "ObjectChanged. originalObject = '" + _originalObject.toString() +
+               "'\n modifiedOBject = '" + _modifiedObject +"'";
+   }
 }

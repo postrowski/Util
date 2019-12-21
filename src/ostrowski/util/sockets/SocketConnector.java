@@ -236,8 +236,12 @@ public abstract class SocketConnector extends Thread
    }
 
    static final String NUMBERS = "0123456789ABCDEF";
+   static boolean fullBufferDump = false;
    private static void appendByteBufferDump(StringBuilder sb, byte[] dataArray)
    {
+      if (!fullBufferDump) {
+         return;
+      }
       StringBuilder ascii = new StringBuilder();
       for (int i=0 ; ((i<dataArray.length) || ((i%32) != 0)) ; i++) {
          if ((i%4) == 0) {
