@@ -121,10 +121,10 @@ public abstract class SocketConnector extends Thread
       diag("terminating thread " + getName());
    }
 
+   static boolean FULL_BUFFER_DUMP_TO_DIAG = false;
+
    private void readAndProcessMessageFromSocket() throws IOException
    {
-      StringBuilder sb = new StringBuilder();
-      sb.append("recieved object:");
       // Receive the ID of the incoming event from the client and
       // create an event object of the appropriate type with data
       // from the stream
@@ -138,8 +138,12 @@ public abstract class SocketConnector extends Thread
       diagBuf[2] = (byte)(msgSize >>>  8);
       diagBuf[3] = (byte)(msgSize >>>  0);
       System.arraycopy(msgBuf, 0, diagBuf, 4, msgSize);
-      appendByteBufferDump(sb, diagBuf);
-      diag(sb.toString());
+      if (FULL_BUFFER_DUMP_TO_DIAG) {
+         StringBuilder sb = new StringBuilder();
+         sb.append("recieved object:");
+         appendByteBufferDump(sb, diagBuf);
+         diag(sb.toString());
+      }
 
       try (ByteArrayInputStream inBuf = new ByteArrayInputStream(msgBuf);
            DataInputStream inStream = new DataInputStream(inBuf))
@@ -219,10 +223,12 @@ public abstract class SocketConnector extends Thread
          newBuf[2] = (byte)(msgSize >>>  8);
          newBuf[3] = (byte)(msgSize >>>  0);
          System.arraycopy(dataArray, 0, newBuf, 4, msgSize);
-         StringBuilder sb = new StringBuilder();
-         sb.append("sending to ").append(target).append(":");
-         appendByteBufferDump(sb, newBuf);
-         diag(sb.toString());
+         if (FULL_BUFFER_DUMP_TO_DIAG) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("sending to ").append(target).append(":");
+            appendByteBufferDump(sb, newBuf);
+            diag(sb.toString());
+         }
 
          long timeStart = System.currentTimeMillis();
          _outputStream.write(newBuf);
@@ -236,12 +242,8 @@ public abstract class SocketConnector extends Thread
    }
 
    static final String NUMBERS = "0123456789ABCDEF";
-   static boolean fullBufferDump = false;
    private static void appendByteBufferDump(StringBuilder sb, byte[] dataArray)
    {
-      if (!fullBufferDump) {
-         return;
-      }
       StringBuilder ascii = new StringBuilder();
       for (int i=0 ; ((i<dataArray.length) || ((i%32) != 0)) ; i++) {
          if ((i%4) == 0) {
