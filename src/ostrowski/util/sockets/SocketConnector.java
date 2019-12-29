@@ -159,12 +159,12 @@ public abstract class SocketConnector extends Thread
             SyncRequest origObj = null;
             if (inObj instanceof Response) {
                Response response = (Response) inObj;
-               origObj = _syncMap.remove(Integer.valueOf(response.getSyncKey()));
+               origObj = _syncMap.remove(response.getSyncKey());
                origObj.setFullAnswerID(response.getFullAnswerID());
             }
             if (inObj instanceof SyncRequest) {
                SyncRequest newReq = (SyncRequest) inObj;
-               origObj = _syncMap.remove(Integer.valueOf(newReq.getSyncKey()));
+               origObj = _syncMap.remove(newReq.getSyncKey());
                if (origObj != null) {
                   diag("original Object found.");
                   origObj.copyAnswer(newReq);
@@ -211,7 +211,7 @@ public abstract class SocketConnector extends Thread
             SyncRequest actReq = (SyncRequest) objToSend;
             // Only track the request message, not the response going back.
             if (!actReq.isAnswered()) {
-               _syncMap.put(Integer.valueOf(actReq.getSyncKey()), actReq);
+               _syncMap.put(actReq.getSyncKey(), actReq);
             }
          }
          objToSend.serializeToStream(outStream);

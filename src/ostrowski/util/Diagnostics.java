@@ -156,11 +156,10 @@ public class Diagnostics {
        * Creates an instance of this class with a diagnostic message
        * and an exception.
        * @param type       the type of the message (INFO, ERR, ...)
-       * @param source     the source of the message
        * @param message    the message to log
        * @param timeStamp  the time the message was created
        * @param threadName the name of the thread that created the message
-       * @param e          the exception to log (null if no exception occured)
+       * @param ex          the exception to log (null if no exception occured)
        */
       DiagMsg(String type, String message, String timeStamp, String threadName, Exception ex) {
          _type         = type;
@@ -454,14 +453,14 @@ public class Diagnostics {
                occuranceCount = valueTable.get(itemValue);
             }
             if (occuranceCount == null) {
-               occuranceCount = Integer.valueOf(1);
+               occuranceCount = 1;
                // If this is the first record of this value,
                // clear out the pre-build association string so we force
                // the association string to be re-built next time its used.
                _prebuiltAssociations = null;
             }
             else {
-               occuranceCount = Integer.valueOf(occuranceCount.intValue() + 1);
+               occuranceCount = occuranceCount.intValue() + 1;
 //               duplicateAssociation = true;
             }
             valueTable.put(itemValue, occuranceCount);
@@ -491,7 +490,7 @@ public class Diagnostics {
                      _prebuiltAssociations = null;
                   }
                   else {
-                     occuranceCount = Integer.valueOf(occuranceCount.intValue() - 1);
+                     occuranceCount = occuranceCount.intValue() - 1;
                      valueTable.put(itemValue, occuranceCount);
                   }
                }
@@ -800,7 +799,7 @@ public class Diagnostics {
     *
     * @param type     the type of message to log
     * @param message  the message to log
-    * @param e        the exception to log
+    * @param ex       the exception to log
     */
    public void logMessage(String type, String message, Exception ex) {
       synchronized (this) {
@@ -892,7 +891,7 @@ public class Diagnostics {
    /**
     * Logs the message to file.
     *
-    * @param message  the message to log to file
+    * @param messageAsString  the message to log to file
     */
    private void logToFile(String messageAsString) {
 
@@ -1177,9 +1176,8 @@ public class Diagnostics {
 
    /**
     * Returns a formatted message as defined by MESSAGE_FORMAT.
-    * @param type    the type of message
-    * @param source  the source of this message
-    * @param message the message to log
+    * @param msgNumber the message ID for the diagnostic node
+    * @param msg the message to log
     * @return formatted log message
     */
    private static String formatMessageForFile(String msgNumber, DiagMsg msg) {

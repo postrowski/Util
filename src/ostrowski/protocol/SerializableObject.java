@@ -103,7 +103,7 @@ public abstract class SerializableObject implements Cloneable
    public static short   readShort  (DataInputStream in) throws IOException { return in.readShort();}
    public static byte    readByte   (DataInputStream in) throws IOException { return in.readByte();}
    public static boolean readBoolean(DataInputStream in) throws IOException { return in.readBoolean();}
-   public static Integer readInteger(DataInputStream in) throws IOException { return Integer.valueOf(in.readInt());}
+   public static Integer readInteger(DataInputStream in) throws IOException { return in.readInt();}
 
    // List serialization (can contain Strings, Integer or SerializableObjects objects)
    public static void writeToStream(List<? extends Object> data, DataOutputStream out) throws IOException {
@@ -144,7 +144,7 @@ public abstract class SerializableObject implements Cloneable
       data.clear();
       int size = in.readShort();
       for (int i=0 ; i<size ; i++) {
-         data.add(Integer.valueOf(in.readInt()));
+         data.add(in.readInt());
       }
       return size;
    }
@@ -153,7 +153,7 @@ public abstract class SerializableObject implements Cloneable
       data.clear();
       int size = in.readShort();
       for (int i=0 ; i<size ; i++) {
-         data.add(Byte.valueOf(in.readByte()));
+         data.add(in.readByte());
       }
       return size;
    }
@@ -162,7 +162,7 @@ public abstract class SerializableObject implements Cloneable
       data.clear();
       int size = in.readShort();
       for (int i=0 ; i<size ; i++) {
-         data.add(Boolean.valueOf(in.readBoolean()));
+         data.add(in.readBoolean());
       }
       return size;
    }
