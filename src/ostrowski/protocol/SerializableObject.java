@@ -49,7 +49,7 @@ public abstract class SerializableObject implements Cloneable
          writeToStream((Byte)obj, out);
       }
       else if (obj instanceof Boolean) {
-         writeToStream(((Boolean)obj).booleanValue(), out);
+         writeToStream((Boolean) obj, out);
       }
       else if (obj instanceof SerializableObject) {
          ((SerializableObject)obj).serializeToStream(out);
@@ -93,8 +93,8 @@ public abstract class SerializableObject implements Cloneable
    public static void writeToStream(short data,   DataOutputStream out) throws IOException { out.writeShort(data);}
    public static void writeToStream(byte data,    DataOutputStream out) throws IOException { out.writeByte(data);}
    public static void writeToStream(boolean data, DataOutputStream out) throws IOException { out.writeBoolean(data);}
-   public static void writeToStream(Integer data, DataOutputStream out) throws IOException { out.writeInt(data.intValue());}
-   public static void writeToStream(Byte data,    DataOutputStream out) throws IOException { out.writeByte(data.byteValue());}
+   public static void writeToStream(Integer data, DataOutputStream out) throws IOException { out.writeInt(data);}
+   public static void writeToStream(Byte data,    DataOutputStream out) throws IOException { out.writeByte(data);}
 
    public static double  readDouble (DataInputStream in) throws IOException { return in.readDouble();}
    public static float   readFloat  (DataInputStream in) throws IOException { return in.readFloat();}
@@ -112,8 +112,7 @@ public abstract class SerializableObject implements Cloneable
       }
       else {
          out.writeShort(data.size());
-         for (int i = 0; i < data.size(); i++) {
-            Object obj = data.get(i);
+         for (Object obj : data) {
             if (obj instanceof SerializableObject) {
                SerializableObject object = (SerializableObject) obj;
                String key = SerializableFactory.getKey(object);
@@ -123,8 +122,7 @@ public abstract class SerializableObject implements Cloneable
                   e.printStackTrace();
                }
                object.serializeToStream(out);
-            }
-            else {
+            } else {
                writeObject(obj, out);
             }
          }
@@ -170,8 +168,8 @@ public abstract class SerializableObject implements Cloneable
    // int[] serialization
    public static void writeToStream(byte[] data, DataOutputStream out) throws IOException {
       out.writeByte(data.length);
-      for (byte i = 0; i < data.length; i++) {
-         out.writeByte(data[i]);
+      for (byte datum : data) {
+         out.writeByte(datum);
       }
    }
 

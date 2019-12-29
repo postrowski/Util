@@ -64,7 +64,7 @@ public class MonitoringObject implements IMonitoringObject
                currentCount = 1;
             }
             else {
-               currentCount = currentCount.intValue() + 1;
+               currentCount = currentCount + 1;
             }
             _watchedObjects.put(watchedObject, currentCount);
          }
@@ -96,9 +96,9 @@ public class MonitoringObject implements IMonitoringObject
                   _watchedObjects.remove(watchedObject);
                }
                else {
-                  currentCount = currentCount.intValue() - 1;
+                  currentCount = currentCount - 1;
 
-                  if (currentCount.intValue() <= 0) {
+                  if (currentCount <= 0) {
                      // When the occurance count goes to zero, remove it from the list
                      _watchedObjects.remove(watchedObject);
                   }

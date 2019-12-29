@@ -263,7 +263,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
             }
          }
          _defaultID       = readInt(in);
-         Boolean hasAnswer = readBoolean(in);
+         boolean hasAnswer = readBoolean(in);
          _answer = null;
          if (hasAnswer) {
             _answer.serializeFromStream(in);

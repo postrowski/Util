@@ -138,9 +138,9 @@ public class StringUtils {
       int j = 0;
       int dataLength = data.length;
       byte[] encodedData =  new byte[dataLength*2];
-      for (int i = 0; i < dataLength; i++) {
-         encodedData[j++] = (byte)(((data[i] & 0xF0) >> 4) + 'a');
-         encodedData[j++] = (byte)((data[i] & 0x0F) + 'a');
+      for (byte datum : data) {
+         encodedData[j++] = (byte) (((datum & 0xF0) >> 4) + 'a');
+         encodedData[j++] = (byte) ((datum & 0x0F) + 'a');
       }
 
       return new String (encodedData);

@@ -30,7 +30,7 @@ public class Response extends SerializableObject implements ISynchronizedRespons
    }
 
    public void setAnswerKey(Integer answer) {
-      _answerID = answer.intValue();
+      _answerID = answer;
    }
 
    public void setAnswerStr(String answer) {
