@@ -482,13 +482,13 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
       pairs = _altMapCharToOption.entrySet();
       for (Entry<Character, IRequestOption> pair : pairs) {
          if (pair.getValue() == option) {
-            return "<alt>-"+pair.getKey().toString();
+            return "<alt>-" + pair.getKey();
          }
       }
       pairs = _ctrlMapCharToOption.entrySet();
       for (Entry<Character, IRequestOption> pair : pairs) {
          if (pair.getValue() == option) {
-            return "<ctrl>-"+pair.getKey().toString();
+            return "<ctrl>-" + pair.getKey();
          }
       }
       return "";
