@@ -233,7 +233,7 @@ public abstract class SocketConnector extends Thread
          long timeStart = System.currentTimeMillis();
          _outputStream.write(newBuf);
          long duration = System.currentTimeMillis() - timeStart;
-         diag("sent object: ("+duration+"ms) to "+target+": " + objToSend.toString());
+         diag("sent object: (" + duration + "ms) to " + target + ": " + objToSend);
          return true;
       } catch (IOException e) {
          e.printStackTrace();
@@ -251,7 +251,7 @@ public abstract class SocketConnector extends Thread
             if ((i%8) == 0) {
                sb.append(' ');
                if ((i%32) == 0) {
-                  sb.append(ascii.toString()).append("\n");
+                  sb.append(ascii).append("\n");
                   ascii.setLength(0);
                }
                ascii.append(' ');
@@ -275,6 +275,6 @@ public abstract class SocketConnector extends Thread
 //       break;
 //       }
       }
-      sb.append("  ").append(ascii.toString());
+      sb.append("  ").append(ascii);
    }
 }

@@ -72,7 +72,7 @@ public class SerializableFactory
                newSerObj.serializeFromStream(inMsg);
                return newSerObj;
             }
-            System.err.println("object " + newObj.getClass().toString()
+            System.err.println("object " + newObj.getClass()
                                + " is not derived from SerializableObject!");
          } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();

@@ -559,7 +559,7 @@ public class Semaphore {
                // start with a fresh string buffer
                threadData.setLength(0);
                // print the thread name
-               threadData.append("Thread ").append(currentThread.toString());
+               threadData.append("Thread ").append(currentThread);
                if (diags != null) {
                   // record the operations for this thread, so we can use it
                   // to sort with once we have the completed string buffer.
@@ -577,7 +577,7 @@ public class Semaphore {
                      // separate each lock with a CR-LF
                      threadData.append(Diagnostics.lineSeparator);
                      // the indent and print each semaphore that is locked.
-                     threadData.append("    ").append(lockedSemaphore.toString());
+                     threadData.append("    ").append(lockedSemaphore);
                   }
                }
                // put the thread data into the sortedString object, sorted by it operations.
@@ -624,7 +624,7 @@ public class Semaphore {
                         long lockTimeLength = lockedSemaphore._lockableDataOutputStream.getLockTimeLengthInMilliseconds();
                         // If this thread does contain a locked Semaphore of the right
                         // type, then we check to see if it is the longest known operation.
-                        diagOutput.append("Thread ").append(currentThread.toString());
+                        diagOutput.append("Thread ").append(currentThread);
                         diagOutput.append(" contains a locked semaphore for a data output stream,");
                         diagOutput.append(" operationID = ").append(diags.getFirstOperationIDsForThread(currentThread));
                         diagOutput.append(" locked for ").append(lockTimeLength).append(" milliseconds");
@@ -665,13 +665,13 @@ public class Semaphore {
       if (dosWithLongestSocketLock != null) {
          try {
             diags.logMessage(Diagnostics.TYPE_SEVERE_ERROR, "Shutting down LockableDataOutputStream: "
-                                                            + dosWithLongestSocketLock.toString());
+                                                            + dosWithLongestSocketLock);
             dosWithLongestSocketLock.close();
             // return true if we successfully shut down a socket.
             return true;
          } catch (IOException ex) {
             diags.logMessage(Diagnostics.TYPE_SEVERE_ERROR, "Exception caught while shutting down LockableDataOutputStream: "
-                                                            + dosWithLongestSocketLock.toString(), ex);
+                                                            + dosWithLongestSocketLock, ex);
          }
       }
       // return false if we did not successfully shut down any sockets.
