@@ -3,7 +3,7 @@ package ostrowski.protocol;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,7 +19,7 @@ import org.w3c.dom.ls.LSSerializer;
 public abstract class XmlSerializableObject
 {
 
-   public abstract Element getXmlObject(Document mapDoc, ArrayList<Integer> includeKnownByUniqueIDInfo, String string);
+   public abstract Element getXmlObject(Document mapDoc, List<Integer> includeKnownByUniqueIDInfo, String string);
 
    public boolean serializeToFile(File destFile)
    {
@@ -38,7 +38,7 @@ public abstract class XmlSerializableObject
       return false;
    }
 
-   public Document getXmlObject(ArrayList<Integer> includeKnownByUniqueIDInfo) {
+   public Document getXmlObject(List<Integer> includeKnownByUniqueIDInfo) {
       // Create a builder factory
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setValidating(true/*validating*/);

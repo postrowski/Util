@@ -10,7 +10,6 @@ import java.util.Vector;
  * This class contains a Vector of String objects, and it keeps them sorted, based
  * on the compareTo operation of the String class.
  * @author pnostrow
- * @see java.lang.String.compareTo
  */
 
 public class SortedStringsVector {

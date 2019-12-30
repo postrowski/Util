@@ -28,7 +28,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    protected int                       _syncKey          = _nextMessageKey++;
    protected String                    _message          = "";
    protected IRequestOption            _answer           = null;
-   protected ArrayList<IRequestOption> _options          = new ArrayList<>();
+   protected List<IRequestOption> _options          = new ArrayList<>();
    protected int                       _defaultID        = -1;
    protected List<SyncRequest>         _resultsQueue     = null;
    protected boolean                   _backupSelected   = false;
@@ -256,7 +256,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
          _syncKey         = readInt(in);
          _message         = readString(in);
          _options         = new ArrayList<>();
-         ArrayList<SerializableObject> options = readIntoListSerializableObject(in);
+         List<SerializableObject> options = readIntoListSerializableObject(in);
          for (SerializableObject opt : options) {
             if (opt instanceof IRequestOption) {
                _options.add((IRequestOption)opt);

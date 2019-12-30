@@ -181,8 +181,8 @@ public abstract class SerializableObject implements Cloneable
       return array;
    }
 
-   public static ArrayList<SerializableObject> readIntoListSerializableObject(DataInputStream in) throws IOException {
-      ArrayList<SerializableObject> data = new ArrayList<>();
+   public static List<SerializableObject> readIntoListSerializableObject(DataInputStream in) throws IOException {
+      List<SerializableObject> data = new ArrayList<>();
       int size = in.readShort();
       for (int i=0 ; i<size ; i++) {
          try {

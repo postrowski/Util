@@ -1,10 +1,11 @@
 package ostrowski.util;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AnglesList
 {
-   ArrayList<AnglePair> _list = new ArrayList<>();
+   List<AnglePair> _list = new ArrayList<>();
    public AnglesList() {
    }
 
