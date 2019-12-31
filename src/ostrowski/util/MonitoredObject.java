@@ -12,14 +12,14 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
    // its watchers list.
    public interface IMonitoredObjectRegistrationWatcher
    {
-      public void watcherRegistered(IMonitorableObject monitoredObject, IMonitoringObject newWatcher, RegisterResults registrationResults);
-      public void watcherUnRegistered(IMonitorableObject monitoredObject, IMonitoringObject priorWatcher, UnRegisterResults unregistrationResults);
+      void watcherRegistered(IMonitorableObject monitoredObject, IMonitoringObject newWatcher, RegisterResults registrationResults);
+      void watcherUnRegistered(IMonitorableObject monitoredObject, IMonitoringObject priorWatcher, UnRegisterResults unregistrationResults);
    }
 
    private Hashtable<IMonitoringObject, Integer> _watchers = new Hashtable<>();
 
    // This is used to lock access to all synchronized member variables:
-   private Semaphore _lock_watchers;
+   private      Semaphore          _lock_watchers;
    // The watchedProxy object allows this object to be contained within an
    // object that implements IMonitorableObject. If this object is contained,
    // then the constructor of this object should be passed a reference
@@ -28,7 +28,7 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
    // the containing object, so that all notifications & registrations go
    // through the container first, before being passed down to this object
    // by the container.
-   public IMonitorableObject _watchedProxy;
+   public final IMonitorableObject _watchedProxy;
 
    private IMonitoredObjectRegistrationWatcher _registrationWatcher;
    // Turn this variable to 'true' if you want to see every registration & unregistration
@@ -111,8 +111,7 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
    }
 
    @Override
-   /**
-    * Method registerAsWatcher. This method is called to register a monitoring object
+   /** Method registerAsWatcher. This method is called to register a monitoring object
     * as a watcher to all changes that affect this monitored object.
     * @param watcherObject. An IMonitoringObject that will receive notifications about
     * changes to this MonitoredObject.
@@ -170,15 +169,14 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
       if (_registrationWatcher != null) {
          _registrationWatcher.watcherRegistered(this, watcherObject, results);
       }
-//      if (_excesiveDiagnostics) {
+//      if (_excessiveDiagnostics) {
 //         reportObjectWatcherRegistration(watcherObject, this, true, false, results);
 //      }
       return results;
    }
 
    @Override
-   /**
-    * Method unregisterAsWatcher. This method is called to unregister a monitoring object
+   /** Method unregisterAsWatcher. This method is called to unregister a monitoring object
     * as a watcher to all changes that affect this monitored object.
     * @param watcherObject. An IMonitoringObject that will not longer recieve notification
     * about changes to this MonitoredObject.
@@ -197,7 +195,7 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
    public UnRegisterResults unregisterAsWatcherAllInstances(IMonitoringObject watcherObject, Diagnostics diag)
    {
       return unregisterAsWatcher(watcherObject, true/*removeAllInstancesOfWatcher*/,  true/*reportFailureIfWatcherNotFound*/, diag);
-   };
+   }
 
    private UnRegisterResults unregisterAsWatcher(IMonitoringObject watcherObject, boolean removeAllInstancesOfWatcher, boolean reportFailureIfWatcherNotFound, Diagnostics diag) {
       UnRegisterResults results = UnRegisterResults.Failure;
@@ -225,7 +223,7 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
                   // being listed in the _watchers list for the MonitoredObject being
                   // watched. In this case, when we the ClientListenerThread calls
                   // unregisterAsWatcher on the object that it no longer wants to
-                  // watch, we would be unable to find the ClientListenrThread,
+                  // watch, we would be unable to find the ClientListenerThread,
                   // unless the _watchedObjects member knew that its _watchingProxy
                   // was the ClientListenerThread.
                   try {
@@ -296,7 +294,7 @@ public class MonitoredObject implements IMonitorableObject, Cloneable
       if (_registrationWatcher != null) {
          _registrationWatcher.watcherUnRegistered(this, watcherObject, results);
       }
-//      if (_excesiveDiagnostics) {
+//      if (_excessiveDiagnostics) {
 //         reportObjectWatcherRegistration(watcherObject, this, false, removeAllInstancesOfWatcher, results);
 //      }
       return results;

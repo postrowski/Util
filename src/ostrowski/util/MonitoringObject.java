@@ -6,7 +6,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 // Inter-Tel Imports
 
-// This class is intented to be contained by a class that itself
+// This class is intended to be contained by a class that itself
 // implements IMonitoringObject. That class can then forward the
 // calls to registerMonitoredObject & unregisterMonitoredObject to
 // this contained object.
@@ -99,7 +99,7 @@ public class MonitoringObject implements IMonitoringObject
                   currentCount = currentCount - 1;
 
                   if (currentCount <= 0) {
-                     // When the occurance count goes to zero, remove it from the list
+                     // When the occurrance count goes to zero, remove it from the list
                      _watchedObjects.remove(watchedObject);
                   }
                   else {

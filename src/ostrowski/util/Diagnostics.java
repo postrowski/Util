@@ -1,7 +1,3 @@
-/**
- *
- */
-
 package ostrowski.util;
 
 import java.io.File;
@@ -34,7 +30,7 @@ public class Diagnostics {
    // Message Types
    //
    public  static final int    TYPE_INFO           = 1;
-   private static final String TYPE_INFO_STRING    = "INFO";   // Each of these
+   private static final String TYPE_INFO_STRING    = "INFO";   // Each of these are
    public  static final String TYPE_WARNING        = "WARN";   // EXACTLY FOUR
    public  static final String TYPE_DEBUG_INFO     = "DBUG";   // CHARACTERS LONG
    public  static final String TYPE_SYSTEM_OUT     = "CONS";
@@ -44,21 +40,10 @@ public class Diagnostics {
    public  static final String TYPE_ERROR          = "ERR ";
    public  static final String TYPE_SEVERE_ERROR   = "SERR";
    public  static final String TYPE_DEBUG_TRAP     = "TRAP";
-   // These message types are identical in string content as other (non-manditory)
-   // string message types, however we need to make sure that the JVM does not
-   // use the exact same object for each. Therefore, we play a little game that
-   // makes sure that TYPE_INFO_STRING != TYPE_MANDATORY_INFO. If the equal operator (=)
-   // returns true for these, then there will actually be no difference between them,
-   // and will lose all mandatory information on the console or log file.
-   // This has another side-effect in that command line commands issued will not respond
-   // unless LogInfoToConsole is turned on (which is usually not).
-   public  static final String TYPE_MANDATORY_INFO = new String("IN") + new String("FO");
-   public  static final String TYPE_MANDATORY_STAT = new String("ST") + new String("AT");
-
 
    // This is a system-depended CR-LF that we should use any time we
    // want to output a newline character.
-   public static String lineSeparator = "\n";//(String) java.security.AccessController.doPrivileged(
+   public static final String lineSeparator = "\n";//(String) java.security.AccessController.doPrivileged(
                                              //    new sun.security.action.GetPropertyAction("line.separator"));
 
    // Message Sources
@@ -70,10 +55,10 @@ public class Diagnostics {
    static final int IOTHREAD_PRIORITY = java.lang.Thread.MIN_PRIORITY;//usable types: MIN_PRIORITY, NORM_PRIORITY, MAX_PRIORITY
 
    // Message Numbering Format
-   // 0 specifes a digit
-   static final String DECIMAL_FORMAT = "00000";
+   // 0 specifies a digit
+   static final         String        DECIMAL_FORMAT = "00000";
    // Decimal Formatter
-   private static DecimalFormat DEC_FORMAT = new DecimalFormat(DECIMAL_FORMAT);
+   private static final DecimalFormat DEC_FORMAT     = new DecimalFormat(DECIMAL_FORMAT);
 
    private static final String EXCEPTION_CALL_STACK            = "e";
    private static final String ASSOCIATION_OPERATION_ID        = "o";
@@ -112,10 +97,10 @@ public class Diagnostics {
    // {6}: exception
    // {7}: call stack dump
    private static final String MESSAGE_NORM_FORMAT = "<m i=\"{0}\" t=\"{1}\" y=\"{2}\" h=\"{3}\">{5}<d><![CDATA[{4}]]></d></m>";
-   private static final String MESSAGE_XCPT_FORMAT = "<m i=\"{0}\" t=\"{1}\" y=\"{2}\" h=\"{3}\">{5}<d><![CDATA[{4}]]></d><"
+   private static final String        MESSAGE_XCPT_FORMAT    = "<m i=\"{0}\" t=\"{1}\" y=\"{2}\" h=\"{3}\">{5}<d><![CDATA[{4}]]></d><"
                                                      + EXCEPTION_CALL_STACK + "><![CDATA[{6}\n{7}]]></" + EXCEPTION_CALL_STACK + "></m>";
-   private static MessageFormat MSG_FORMAT_NORMAL    = new MessageFormat(MESSAGE_NORM_FORMAT);
-   private static MessageFormat MSG_FORMAT_EXCEPTIONAL = new MessageFormat(MESSAGE_XCPT_FORMAT);
+   private static final MessageFormat MSG_FORMAT_NORMAL      = new MessageFormat(MESSAGE_NORM_FORMAT);
+   private static final MessageFormat MSG_FORMAT_EXCEPTIONAL = new MessageFormat(MESSAGE_XCPT_FORMAT);
 
    // Property File Name
    private String _propertyFile;
@@ -146,11 +131,11 @@ public class Diagnostics {
     */
    class DiagMsg {
       public String     _type;
-      public String     _message;
-      public String     _timeStamp;
-      public String     _threadName;
-      public Exception  _exception;
-      public String     _associations;
+      public       String    _message;
+      public final String    _timeStamp;
+      public final String    _threadName;
+      public final Exception _exception;
+      public final String    _associations;
 
       /**
        * Creates an instance of this class with a diagnostic message
@@ -248,7 +233,7 @@ public class Diagnostics {
    }
 
    @SuppressWarnings("serial")
-   private class DiagnosticAssociationException extends java.lang.RuntimeException {
+   private static class DiagnosticAssociationException extends java.lang.RuntimeException {
       public DiagnosticAssociationException() {
          super();
       }
@@ -308,7 +293,7 @@ public class Diagnostics {
          if (operationsSource._operationIDsList.size() > 0) {
             _prebuiltAssociations = null;
             String lastName = (operationsSource._operationNamesList.lastElement());
-            String opID = null;
+            String opID;
             String opName = null;
             for (int i=0 ; i<operationsSource._operationIDsList.size() ; i++) {
                opID   = (operationsSource._operationIDsList.elementAt(i));
@@ -406,7 +391,7 @@ public class Diagnostics {
                      // that never got a name before it completed. Since it therefore never
                      // had a diag of type TYPE_OPERATIONS, we need to make one now, so that
                      // it can be found by filtering on type OPERATIONS.
-                     // However, if this operation was meerly one portion of a named operation
+                     // However, if this operation was merely one portion of a named operation
                      // that occurred on another thread, then we don't need to give it the
                      // type of TYPE_OPERATION
                      if (_unnamedPartOfNamedOperation) {
@@ -509,7 +494,7 @@ public class Diagnostics {
          // Check for a pre-build association string so that we don't have to
          // re-build this string again if nothing has changed since our last diag.
          if (_prebuiltAssociations == null) {
-            StringBuffer assocBuffer = new StringBuffer();
+            StringBuilder assocBuffer = new StringBuilder();
             // Operation IDs are garuanteed to be unique, although more than one may exist.
             for (int i=0 ; i<_operationIDsList.size() ; i++) {
                assocBuffer.append('<');
@@ -556,7 +541,7 @@ public class Diagnostics {
       }
 
       public String getOperationsString() {
-         StringBuffer results = new StringBuffer();
+         StringBuilder results = new StringBuilder();
          results.append('[');
          boolean addComma = false;
          for (int i=0 ; i<_operationIDsList.size() ; i++) {
@@ -618,7 +603,7 @@ public class Diagnostics {
    public Object setCurrentAssociations(Object newAssociationsObj, boolean preserveExistingOperations)
    {
       DiagnosticAssociations newAssociations = null;
-      if ((newAssociationsObj != null) && (newAssociationsObj instanceof DiagnosticAssociations))
+      if (newAssociationsObj instanceof DiagnosticAssociations)
       {
          newAssociations = (DiagnosticAssociations)newAssociationsObj;
       }
@@ -748,7 +733,7 @@ public class Diagnostics {
     */
    public void endDiagnostics() {
       Vector<DiagMsg> messageWaiting = new Vector<>();
-      DiagMsg message = null;
+      DiagMsg message;
       // Lock the message queue so no new messages will be accepted
       synchronized (_queue) {
          try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_queue._lockMessageQueue)) {
@@ -762,8 +747,6 @@ public class Diagnostics {
                // Retrieve message from queue.
                message = _queue.getMessage();
                messageWaiting.add(message);
-               // set this to null to help garbage collection reclaim the object more quickly
-               message = null;
             }
          }
          // wake up any thread that is waiting for an object to enter the queue.
@@ -773,8 +756,6 @@ public class Diagnostics {
       while (!messageWaiting.isEmpty()){
          message = messageWaiting.remove(0);
          displayMessage(message);
-         // set this to null to help garbage collection reclaim the object more quickly
-         message = null;
       }
    }
 
@@ -812,8 +793,6 @@ public class Diagnostics {
                                        StringUtils.getTimeStamp(),
                                        Thread.currentThread().getName(), ex);
             _queue.addMessage(mesg);
-            // set this to null to help garbage collection reclaim the object more quickly
-            mesg = null;
          }
       }
    }
@@ -833,8 +812,6 @@ public class Diagnostics {
                                        Thread.currentThread().getName(), null);
 
             _queue.addMessage(mesg);
-            // set this to null to help garbage collection reclaim the object more quickly
-            mesg = null;
          }
       }
    }
@@ -856,9 +833,6 @@ public class Diagnostics {
                                           StringUtils.getTimeStamp(),
                                           Thread.currentThread().getName(), null);
                _queue.addMessage(mesg);
-               // set this to null to help garbage collection reclaim the object more quickly
-               mesg = null;
-
             }
          }
       }
@@ -915,7 +889,7 @@ public class Diagnostics {
         //This is remove any XML comments at the end of the file
         //If we have XML comments at the end, the next cycle of
         //overwriting the file would have errors in placing the XML comment tags.
-      	if((_fileOverwrite==true) && (_file.length() <= _existingFileLength)){
+      	if(_fileOverwrite && (_file.length() <= _existingFileLength)){
       		_file.seek(_file.getFilePointer()-START_COMMENT_DATA.length());
       		_file.writeBytes(_emptyDataString.toString());
       	}
@@ -1019,7 +993,6 @@ public class Diagnostics {
                _file = null;
                try {
                   raf.close();
-                  raf = null;
                }
                catch (IOException ex) {
                   System.err.println ("Diagnostics: logToFile: Error closing file " + _filePath);
@@ -1032,8 +1005,8 @@ public class Diagnostics {
 
    /**
     * Obtain a log file name from the baseLogFile and indexLogFile.
-    * @param baseLogFile
-    * @param indexLogFile
+    * @param baseLogFile The String of the full logfile name to append the number and ".log" to
+    * @param indexLogFile The index to add as a number to the logfile name.
     * @return log file name
     */
    private static String getLogFile(String baseLogFile, int indexLogFile) {
@@ -1055,7 +1028,7 @@ public class Diagnostics {
 
       // Search for most recent logFile
       _fileNumber           = 1;
-      String  fileName      = null;
+      String  fileName;
       File    bestFileSoFar = null;
       boolean fileExists    = true;
       boolean useThisFile;
@@ -1071,7 +1044,7 @@ public class Diagnostics {
             fileExists = tempFile.exists();
          }
          catch (SecurityException ex) {
-            System.err.println ("Security Exception occured while accessing " + tempFile.getAbsolutePath());
+            System.err.println ("Security Exception occurred while accessing " + tempFile.getAbsolutePath());
             System.out.println (ex.getMessage());
          }
          // We will use this file in three case:
@@ -1096,9 +1069,8 @@ public class Diagnostics {
          advanceFileNumber(startNewFile/*deleteFileBeforeUsing*/);
       }
       else {
-         if (bestFileSoFar != null) {
-            setFilePath(bestFileSoFar.getAbsolutePath(), startNewFile);
-         }
+         assert bestFileSoFar != null;
+         setFilePath(bestFileSoFar.getAbsolutePath(), startNewFile);
       }
    }
 
@@ -1118,7 +1090,7 @@ public class Diagnostics {
    private boolean setFilePath(String newPathName, boolean deleteFileBeforeUsing) {
       // Overwrite existing LogFile by deleting the old instance of it.
       File file = new File(newPathName);
-      RandomAccessFile raf = null;
+      RandomAccessFile raf;
       long fileLength = 0;
       try {
          // If the the file exists, delete it or set our file length equal to its length.
@@ -1135,7 +1107,7 @@ public class Diagnostics {
          raf.seek(fileLength);
       }
       catch (SecurityException ex) {
-         System.err.println ("Security Exception occured while accessing " + newPathName);
+         System.err.println ("Security Exception occurred while accessing " + newPathName);
          System.out.println (ex.getMessage());
          return false;
       }
@@ -1220,7 +1192,7 @@ public class Diagnostics {
       // + 1 character        space
       //  ---------------
       //  43 characters (max)
-      StringBuffer messageBuffer = new StringBuffer(50);
+      StringBuilder messageBuffer = new StringBuilder(50);
       messageBuffer.append(message._type).append(' ');
       messageBuffer.append(message._timeStamp).append(' ');
       messageBuffer.append(message._threadName);
@@ -1253,18 +1225,18 @@ public class Diagnostics {
          else {   // Formatted Message
             String msgNumber = getMessageNumber();
             String messageAsString;
-            boolean manditory = ((message._type != TYPE_INFO_STRING) &&
+            boolean mandatory = ((message._type != TYPE_INFO_STRING) &&
                                  (message._type != TYPE_OPERATIONS)  &&
                                  (message._type != TYPE_STATISTICAL) &&
                                  (message._type != TYPE_MONITORS));
-            if ( manditory || _logInfoToConsole) {
+            if ( mandatory || _logInfoToConsole) {
                messageAsString = formatMessageForConsole(message);
                System.out.println(messageAsString);
                if (message._exception != null) {
                   message._exception.printStackTrace();
                }
             }
-            if ( manditory || _logInfoToFile) {
+            if ( mandatory || _logInfoToFile) {
                messageAsString = formatMessageForFile(msgNumber, message);
                logToFile(messageAsString);
                // Check to see if this is a message that should be written
@@ -1317,23 +1289,6 @@ public class Diagnostics {
    }
 
    /**
-    * Method resumeOutput.
-    * This method resumes the output of the diagnostics after a prior pause command
-    */
-   public void resumeOutput() {
-      _myThread.resumeOutput();
-   }
-
-   /**
-    * Method pauseOutput.
-    * This method suspends the diagnostic output for the number of seconds in the parameter.
-    * @param timeToPause
-    */
-   public void pauseOutput(int timeToPause) {
-      _myThread.pauseOutput(timeToPause);
-   }
-
-   /**
     * IOThread simulates a low priority thread that logs the messages to file.
     *
     */
@@ -1354,7 +1309,7 @@ public class Diagnostics {
        */
       @Override
       public void run() {
-         DiagMsg message = null;
+         DiagMsg message;
          _pauseTimer = 0;
          while(!_endDiags || (_queue.getSize() > 0)) {
             // Retrieve message from queue.
@@ -1371,31 +1326,6 @@ public class Diagnostics {
                }
             }
             displayMessage(message);
-            // set this to null to help garbage collection reclaim the object more quickly
-            message = null;
-         }
-      }
-      /**
-       * Method resumeOutput.
-       */
-      public void resumeOutput() {
-         if (_pauseTimer != 0) {
-            _pauseTimer = 0;
-            interrupt();
-         }
-      }
-
-      /**
-       * Method pauseOutput.
-       * @param timeToPause
-       */
-      public void pauseOutput(int timeToPause) {
-         boolean alreadyPaused = (_pauseTimer != 0);
-         _pauseTimer = timeToPause * 1000; // how may milliseconds should we wait?
-         if (alreadyPaused) {
-            // If we are already were paused, then we need to interrupt the current
-            // wait, so that we are now waiting for the new
-            interrupt();
          }
       }
    }
@@ -1467,7 +1397,7 @@ public class Diagnostics {
                                            " If that doesn't help, then the server should be re-started to restore logging.";
 
                      // Since we are about the throw away the current message, and we need to
-                     // create a new one to log this error, just canibalize the current one.
+                     // create a new one to log this error, just cannibalize the current one.
                      msg._type = TYPE_SEVERE_ERROR;
                      msg._message = errorMessage;
 

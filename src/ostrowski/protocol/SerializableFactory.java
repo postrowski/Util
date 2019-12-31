@@ -10,8 +10,8 @@ import ostrowski.DebugBreak;
 public class SerializableFactory
 {
 
-   static HashMap<String, Class<?>> _classMap = new HashMap<>();
-   static HashMap<Class<?>, String> _keyMap   = new HashMap<>();
+   static final HashMap<String, Class<? extends SerializableObject>> _classMap = new HashMap<>();
+   static final HashMap<Class<? extends SerializableObject>, String> _keyMap   = new HashMap<>();
 
    static {
       registerClass("ClinID", ClientID.class);
@@ -22,7 +22,7 @@ public class SerializableFactory
       registerClass("Respns", Response.class);
    }
 
-   public static void registerClass(String key, Class<?> cls) {
+   public static void registerClass(String key, Class<? extends SerializableObject> cls) {
       boolean success = false;
       try {
          // make sure we can instantiate a new instance without any parameters.
@@ -45,16 +45,16 @@ public class SerializableFactory
    }
 
    public static String getKey(SerializableObject serObj) {
-      Class<?> serClass = serObj.getClass();
+      Class<? extends SerializableObject> serClass = serObj.getClass();
       String res = (_keyMap.get(serClass));
       while (res == null) {
          Type superClass = serClass.getGenericSuperclass();
          if (!(superClass instanceof Class) || superClass.equals(SerializableObject.class)) {
-            String message = "class " + serObj.getClass().getName() + " is not registered in factory map.";
+            String message = "class " + serClass.getName() + " is not registered in factory map.";
             DebugBreak.debugBreak(message);
             throw new UnsupportedOperationException(message);
          }
-         serClass = (Class<?>) superClass;
+         serClass = (Class<? extends SerializableObject>) superClass;
          res = (_keyMap.get(serClass));
       }
       return res;

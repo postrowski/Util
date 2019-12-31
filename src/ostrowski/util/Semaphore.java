@@ -34,21 +34,21 @@ public class Semaphore {
    // This Hashtable provides us with a mapping between the current thread
    // and a Vector that contains all the Semaphore objects that the thread
    // has locked.
-   private static Hashtable<Thread, Vector<Semaphore>> THREAD_HASH = new Hashtable<>(51); // assume about 50 threads may run in the server
+   private static final Hashtable<Thread, Vector<Semaphore>> THREAD_HASH = new Hashtable<>(51); // assume about 50 threads may run in the server
 
    // This variable gives us a name we can display in the error cases, making
    // it easier to locate the violations
-   public String _name;
+   public final String _name;
 
    Semaphore _peerLockAuthorityParent;
 
    // This member is used to keep track of the data output stream that this
    // Semaphore is protecting. We keep track of this, so we can use this
    // Semaphore object to close the socket if this blocking.
-   LockableDataOutputStream _lockableDataOutputStream;
+   final LockableDataOutputStream _lockableDataOutputStream;
 
    // This is used to detect potential deadlocks. When multiple Semaphores
-   // are locked, they MUST be locked in a decending order. Therefore, if
+   // are locked, they MUST be locked in a descending order. Therefore, if
    // you lock a Semaphore that has an order of 4, and then while you still
    // have that object locked, you try to lock a Semaphore that has an order
    // of 4 or higher, you risk creating a deadlock condition. You also must
@@ -59,7 +59,7 @@ public class Semaphore {
    // lock simple Semaphores (order 1), then the Semaphore should have an
    // order of 2. Similarly, if another Semaphore need to lock this order 2
    // Semaphore, it should have an order of 3.
-   public int _order;
+   public final int _order;
    // To assign an order for a given Semaphore, you should
    // use one of the constants defined here (or define a new one here):
 
@@ -122,7 +122,7 @@ public class Semaphore {
    /** Call this method when you want to allow the Semaphore object to be locked while another
     * object of the same order is already locked. It will not report a deadlock possibility as
     * long as the parentLock Semaphore is locked before either peer object is locked.
-    * @param parentLock
+    * @param parentLock The Semaphore that must be locked to lock both objects at the same time
     */
    public void setPeerLockAuthorityParent(Semaphore parentLock) {
       _peerLockAuthorityParent = parentLock;
@@ -278,7 +278,7 @@ public class Semaphore {
             }
             else {
                // If the track count was below zero, AND this object was not removed from
-               // the list of locked object, then this object was likely forcably removed when
+               // the list of locked object, then this object was likely forcibly removed when
                // it was found to be tracked while a higher order lock was trying to be locked.
                _trackCount = 0;
             }
@@ -378,7 +378,7 @@ public class Semaphore {
       return true;
    }
 
-   static private Vector<String> reportedViolations = new Vector<>();
+   static private final Vector<String> reportedViolations = new Vector<>();
    private void ReportPossibleDeadlockCondition(String strReason)
    {
       // Put the call stack into a String so we can check to make sure
@@ -415,7 +415,7 @@ public class Semaphore {
 
    // This is a system-depended CR-LF that we should use any time we
    // want to output a newline character.
-   public static String lineSeparator = "\n";//(String) java.security.AccessController.doPrivileged(
+   public static final String lineSeparator = "\n";//(String) java.security.AccessController.doPrivileged(
                                              //    new sun.security.action.GetPropertyAction("line.separator"));
 
    private static void writeStringsToDeadlockFile(Vector<String> messageLines)
@@ -423,7 +423,7 @@ public class Semaphore {
       // create the file, if it doesn't already exist
       File file = new File("logs", "Deadlocks.log");
 
-      // This String is used in case we have a IOExecption, it will tell us
+      // This String is used in case we have a IOException, it will tell us
       // what operation was being processed (open, write, or close)
       String ioOperation = "opening";
       // Append message to log file
@@ -484,14 +484,14 @@ public class Semaphore {
     *
     * @author pnostrow
     */
-   // Define this class to be static, so that it can be instanciated from within
+   // Define this class to be static, so that it can be instantiated from within
    // a static method of the Semaphore class
    public static class SortedStrings {
-      SortedStringsVector _sortedKeys;
+      final SortedStringsVector               _sortedKeys;
       // This hashtable contains Vector objects, which contain all the strings
       // that are mapped by to by the same keyString. This allows us to accept
       // multiple data strings for a single key string.
-      Hashtable<String, Vector<String>> _dataTable;
+      final Hashtable<String, Vector<String>> _dataTable;
 
       public SortedStrings() {
          _sortedKeys = new SortedStringsVector();
@@ -526,12 +526,12 @@ public class Semaphore {
       /**
        * ConvertToSortedVectorOfDataStringsAndDestroy removes each of the
        * strings in the data array, in the order defined by the key strings,
-       * and returns them in a Vector. It is neccessary to remove the elements
+       * and returns them in a Vector. It is necessary to remove the elements
        * from the data table as they are added to the results Vector, because
        * if there exist two different data strings that have the same key string
        * then we would never be able to access the second data string (unless we
        * remove the first string.)
-       * @return
+       * @return A Vector of Strings
        */
       public Vector<String> ConvertToSortedVectorOfDataStringsAndDestroy() {
          Vector<String> results = new Vector<>();
@@ -549,7 +549,7 @@ public class Semaphore {
          Enumeration<Thread> enumThreads = THREAD_HASH.keys();
          Vector<Semaphore> threadsLockedSemaphores;
          Thread currentThread;
-         StringBuffer threadData = new StringBuffer();
+         StringBuilder threadData = new StringBuilder();
          String diagOperations;
          while(enumThreads.hasMoreElements()) {
             currentThread = (enumThreads.nextElement());
@@ -600,7 +600,7 @@ public class Semaphore {
       // To avoid writing diagnostics while we have a lock on synchronized(_threadHash),
       // we create this StringBuffer, and write all diagnostics to it. Then, once we have
       // exited the synchronized block, we can print the diags safely.
-      StringBuffer diagOutput = new StringBuffer();
+      StringBuilder diagOutput = new StringBuilder();
       diagOutput.append("Checking threads for blocking sockets");
       diagOutput.append(':').append(Diagnostics.lineSeparator);
       synchronized(THREAD_HASH) {

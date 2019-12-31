@@ -14,8 +14,8 @@ public class AnglePairDegrees extends AnglePair {
       AnglePairDegrees pair1 = new AnglePairDegrees(start1, end1);
       AnglePairDegrees pair2 = new AnglePairDegrees(start2, end2);
       AnglePairDegrees res   = new AnglePairDegrees(resStart, resEnd);
-      AnglePair unionA = pair1.unionWithIfOverlapping(pair2, 0.0/*tollerance*/);
-      AnglePair unionB = pair2.unionWithIfOverlapping(pair1, 0.0/*tollerance*/);
+      AnglePair unionA = pair1.unionWithIfOverlapping(pair2, 0.0/*tolerance*/);
+      AnglePair unionB = pair2.unionWithIfOverlapping(pair1, 0.0/*tolerance*/);
       DebugBreak.debugBreakIf(unionA.diff(unionB) > 0.00001, "angles dont match");
       DebugBreak.debugBreakIf(unionA.diff(res) > 0.00001, "angles dont match");
 
@@ -37,11 +37,11 @@ public class AnglePairDegrees extends AnglePair {
       pair1.adjustToIncludeAngle(Math.toRadians(340));
       DebugBreak.debugBreakIf((Math.abs(pair1.width() - Math.toRadians(70))  > 0.0001));
       // pair1 = 340-410 (-20 - 50)
-      DebugBreak.debugBreakIf(!pair1.includesAngle(Math.toRadians(10  ), 0.0/*tollerance*/));
-      DebugBreak.debugBreakIf( pair1.includesAngle(Math.toRadians(50.1), 0.0/*tollerance*/));
-      DebugBreak.debugBreakIf(!pair1.includesAngle(Math.toRadians(49.9), 0.0/*tollerance*/));
-      DebugBreak.debugBreakIf( pair1.includesAngle(Math.toRadians(180 ), 0.0/*tollerance*/));
-      DebugBreak.debugBreakIf( pair1.includesAngle(Math.toRadians(339 ), 0.0/*tollerance*/));
-      DebugBreak.debugBreakIf(!pair1.includesAngle(Math.toRadians(341 ), 0.0/*tollerance*/));
+      DebugBreak.debugBreakIf(!pair1.includesAngle(Math.toRadians(10  ), 0.0/*tolerance*/));
+      DebugBreak.debugBreakIf( pair1.includesAngle(Math.toRadians(50.1), 0.0/*tolerance*/));
+      DebugBreak.debugBreakIf(!pair1.includesAngle(Math.toRadians(49.9), 0.0/*tolerance*/));
+      DebugBreak.debugBreakIf( pair1.includesAngle(Math.toRadians(180 ), 0.0/*tolerance*/));
+      DebugBreak.debugBreakIf( pair1.includesAngle(Math.toRadians(339 ), 0.0/*tolerance*/));
+      DebugBreak.debugBreakIf(!pair1.includesAngle(Math.toRadians(341 ), 0.0/*tolerance*/));
    }
 }

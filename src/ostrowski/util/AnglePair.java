@@ -3,8 +3,8 @@ package ostrowski.util;
 import ostrowski.DebugBreak;
 
 public class AnglePair implements Comparable<AnglePair> {
-   public static double TWO_PI = 2 * Math.PI;
-   private static double NINETY_DEGREES = Math.PI / 2;
+   public static final double TWO_PI = 2 * Math.PI;
+   private static final double NINETY_DEGREES = Math.PI / 2;
    public double _startAngle;
    public double _stopAngle;
 
@@ -22,11 +22,11 @@ public class AnglePair implements Comparable<AnglePair> {
       }
    }
 
-   protected void ensureAccute() {
+   protected void ensureAcute() {
       ensureNormalized();
       double width = width();
       if (width > NINETY_DEGREES) {
-         DebugBreak.debugBreak("angle must initially be accute.");
+         DebugBreak.debugBreak("angle must initially be acute.");
       }
    }
 
@@ -59,7 +59,7 @@ public class AnglePair implements Comparable<AnglePair> {
    // 330-350 +20  = 330-370
    // 320-400 +50  = 320-410
    public void adjustToIncludeAngle(double angleIn) {
-      if (includesAngle(angleIn, 0.0/*tollerance*/)) {
+      if (includesAngle(angleIn, 0.0/*tolerance*/)) {
          return;
       }
       // _startAngle must always be between 0 and 2PI
@@ -77,7 +77,7 @@ public class AnglePair implements Comparable<AnglePair> {
          // becomes the new stop
          _stopAngle = angle;
       }
-      //ensureAccute();
+      //ensureAcute();
       ensureNormalized();
    }
 
@@ -85,7 +85,7 @@ public class AnglePair implements Comparable<AnglePair> {
       return _stopAngle - _startAngle;
    }
 
-   public boolean includesAngle(double angleIn, double tollerance) {
+   public boolean includesAngle(double angleIn, double tolerance) {
       double angle = normalizeAngle(angleIn, TWO_PI);
       if (angle < _startAngle) {
          angle += TWO_PI;
@@ -95,33 +95,27 @@ public class AnglePair implements Comparable<AnglePair> {
 
    @Override
    public int compareTo(AnglePair arg) {
-      if (arg._startAngle == _startAngle) {
-         return 0;
-      }
-      if (arg._startAngle > _startAngle) {
-         return -1;
-      }
-      return 1;
+      return Double.compare(_startAngle, arg._startAngle);
    }
 
    public boolean containsCompletely(AnglePair other) {
-      return (includesAngle(other._startAngle, 0.0/*tollerance*/) &&
-              includesAngle(other._stopAngle, 0.0/*tollerance*/));
+      return (includesAngle(other._startAngle, 0.0/*tolerance*/) &&
+              includesAngle(other._stopAngle, 0.0/*tolerance*/));
    }
 
    public boolean overlapsWith(AnglePair other) {
-      return (includesAngle(other._startAngle, 0.0/*tollerance*/) ||
-              includesAngle(other._stopAngle, 0.0/*tollerance*/)  ||
-              other.includesAngle(_startAngle, 0.0/*tollerance*/) ||
-              other.includesAngle(_stopAngle, 0.0/*tollerance*/));
+      return (includesAngle(other._startAngle, 0.0/*tolerance*/) ||
+              includesAngle(other._stopAngle, 0.0/*tolerance*/)  ||
+              other.includesAngle(_startAngle, 0.0/*tolerance*/) ||
+              other.includesAngle(_stopAngle, 0.0/*tolerance*/));
    }
 
    // This method will expand the size of the angle by adding the two angles together, IF they overlap.
    // If they don't overlap, then the union can not be contained within a single AnglePair, so 'null' is returned.
-   public AnglePair unionWithIfOverlapping(AnglePair other, double tollerance) {
-      if (this.includesAngle(other._startAngle, tollerance)) {
+   public AnglePair unionWithIfOverlapping(AnglePair other, double tolerance) {
+      if (this.includesAngle(other._startAngle, tolerance)) {
          double stopAngle;
-         if (this.includesAngle(other._stopAngle, tollerance)) {
+         if (this.includesAngle(other._stopAngle, tolerance)) {
             // this AnglePair fully encloses the other AnglePair, or these angles complete a full circle
             if (this.width() < other.width()) {
                return new AnglePair(0, TWO_PI); // fill circle
@@ -136,17 +130,17 @@ public class AnglePair implements Comparable<AnglePair> {
          }
          return new AnglePair(_startAngle, stopAngle);
       }
-      if (other.includesAngle(this._startAngle, tollerance)) {
-         return other.unionWithIfOverlapping(this, tollerance);
+      if (other.includesAngle(this._startAngle, tolerance)) {
+         return other.unionWithIfOverlapping(this, tolerance);
       }
       // These angles don't overlap.
       // check if they are very very close.
-      if (Math.abs(_stopAngle - other._startAngle) < 0.01) {
+//      if (Math.abs(_stopAngle - other._startAngle) < 0.01) {
 //         return new AnglePair(_startAngle, other._stopAngle);
-      }
-      if (Math.abs(other._stopAngle - _startAngle) < 0.01) {
+//      }
+//      if (Math.abs(other._stopAngle - _startAngle) < 0.01) {
 //         return new AnglePair(other._startAngle, _stopAngle);
-      }
+//      }
       return null;
    }
 
@@ -172,7 +166,7 @@ public class AnglePair implements Comparable<AnglePair> {
 
    @Override
    public boolean equals(Object other) {
-      if (other instanceof AnglePair) {
+      if (!(other instanceof AnglePair)) {
          return false;
       }
       AnglePair otherAP = (AnglePair) other;
@@ -212,10 +206,10 @@ public class AnglePair implements Comparable<AnglePair> {
 //      _startAngle = normalizeAngle(_startAngle, TWO_PI);
 //      _width = normalizeAngle(_width, TWO_PI);
 //   }
-//   protected void ensureAccute() {
+//   protected void ensureAcute() {
 //      ensureNormalized();
 //      if (width() > (TWO_PI / 4)) {
-//         DebugBreak.debugBreak("angle must initially be accute.");
+//         DebugBreak.debugBreak("angle must initially be acute.");
 //      }
 //   }
 //   public static double normalizeAngleRadians(double angle) {
@@ -256,7 +250,7 @@ public class AnglePair implements Comparable<AnglePair> {
 //         // becomes the new stop
 //         _stopAngle = angle;
 //      }
-//      ensureAccute();
+//      ensureAcute();
 //   }
 //   public double width() {
 //      return _width;
@@ -281,8 +275,8 @@ public class AnglePair implements Comparable<AnglePair> {
 //      }
 //      // At this point, we know that this._startAngle <= other._startAngle
 //
-//      double tollerance = 0.0;
-//      if (((this._startAngle + this._width) + tollerance) > other._startAngle) {
+//      double tolerance = 0.0;
+//      if (((this._startAngle + this._width) + tolerance) > other._startAngle) {
 //         // no overlapping regions
 //         return null;
 //      }

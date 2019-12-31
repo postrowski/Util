@@ -106,7 +106,7 @@ public abstract class SerializableObject implements Cloneable
    public static Integer readInteger(DataInputStream in) throws IOException { return in.readInt();}
 
    // List serialization (can contain Strings, Integer or SerializableObjects objects)
-   public static void writeToStream(List<? extends Object> data, DataOutputStream out) throws IOException {
+   public static void writeToStream(List<?> data, DataOutputStream out) throws IOException {
       if (data == null) {
          out.writeShort(0);
       }

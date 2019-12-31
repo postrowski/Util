@@ -24,16 +24,16 @@ import ostrowski.util.sockets.ISynchronizedResponse;
 
 public abstract class SyncRequest extends SerializableObject implements ISynchronizedRequest, ISynchronizedResponse
 {
-   protected static int                _nextMessageKey   = 1;
-   protected int                       _syncKey          = _nextMessageKey++;
-   protected String                    _message          = "";
-   protected IRequestOption            _answer           = null;
+   protected static int           _nextMessageKey   = 1;
+   protected int                  _syncKey          = _nextMessageKey++;
+   protected String               _message          = "";
+   protected IRequestOption       _answer           = null;
    protected List<IRequestOption> _options          = new ArrayList<>();
-   protected int                       _defaultID        = -1;
-   protected List<SyncRequest>         _resultsQueue     = null;
-   protected boolean                   _backupSelected   = false;
+   protected int                  _defaultID        = -1;
+   protected List<SyncRequest>    _resultsQueue     = null;
+   protected boolean              _backupSelected   = false;
 
-   public Semaphore _lockThis = new Semaphore("SyncRequest", Semaphore.CLASS_SYNCHREQUEST);
+   public final Semaphore _lockThis = new Semaphore("SyncRequest", Semaphore.CLASS_SYNCHREQUEST);
 
    public static final int OPT_CANCEL_ACTION  = -2;
    public static final int ACTION_NONE  = 0;
@@ -240,8 +240,9 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
          writeToStream(_message, out);
          writeToStream(_options, out);
          writeToStream(_defaultID, out);
-         writeToStream((_answer != null), out);
+         writeToStream((_answer instanceof SerializableObject), out);
          if (_answer != null) {
+            writeToStream(SerializableFactory.getKey((SerializableObject)_answer), out);
             _answer.serializeToStream(out);
          }
       } catch (IOException e) {
@@ -266,7 +267,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
          boolean hasAnswer = readBoolean(in);
          _answer = null;
          if (hasAnswer) {
-            _answer.serializeFromStream(in);
+            _answer = (IRequestOption) SerializableFactory.readObject(readString(in), in);
          }
       } catch (IOException e) {
          e.printStackTrace();
@@ -386,7 +387,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
     * this method is called to get a complete answer as a single ID, which
     * will be used to set the Response value, and will be copied into the
     * server-side Request object once its been received.
-    * @return
+    * @return The integer answer ID
     */
    public int getFullAnswerID() {
       return getAnswerID();
@@ -404,9 +405,9 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
       return setAnswerID(value);
    }
 
-   public HashMap<java.lang.Character, IRequestOption> _mapCharToOption = new HashMap<>();
-   public HashMap<java.lang.Character, IRequestOption> _ctrlMapCharToOption = new HashMap<>();
-   public HashMap<java.lang.Character, IRequestOption> _altMapCharToOption = new HashMap<>();
+   public final HashMap<java.lang.Character, IRequestOption> _mapCharToOption     = new HashMap<>();
+   public final HashMap<java.lang.Character, IRequestOption> _ctrlMapCharToOption = new HashMap<>();
+   public final HashMap<java.lang.Character, IRequestOption> _altMapCharToOption  = new HashMap<>();
 
    public Integer getOptionIDForKeystroke(int key, int mask) {
       char charKey = (char)key;

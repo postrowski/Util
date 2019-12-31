@@ -24,7 +24,7 @@ import ostrowski.util.SemaphoreAutoLocker;
 
 public abstract class SocketConnector extends Thread
 {
-   public abstract void processRecievedObject(SerializableObject inObj);
+   public abstract void processReceivedObject(SerializableObject inObj);
 
    public abstract void handleDisconnect(SocketConnector diconnectedConnection);
 
@@ -32,14 +32,14 @@ public abstract class SocketConnector extends Thread
 
    public abstract void diag(String message);
 
-   boolean          _connected;
+   final boolean _connected;
    boolean          _running;
    Socket           _socket       = null;
    DataInputStream  _inputStream  = null;
    DataOutputStream _outputStream = null;
-   static HashMap<Integer, SyncRequest> _syncMap = new HashMap<>();
+   static final HashMap<Integer, SyncRequest> _syncMap = new HashMap<>();
 
-   Semaphore _lock_inputStream = new Semaphore("SocketConnector", Semaphore.CLASS_SOCKETCONNECTOR);
+   final Semaphore _lock_inputStream = new Semaphore("SocketConnector", Semaphore.CLASS_SOCKETCONNECTOR);
 
    public SocketConnector(String threadName)
    {
@@ -53,8 +53,6 @@ public abstract class SocketConnector extends Thread
       try {
          _socket = new Socket(ipAddress, port);
          initStreams();
-      } catch (UnknownHostException e) {
-         e.printStackTrace();
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -74,8 +72,6 @@ public abstract class SocketConnector extends Thread
             _socket.setSoLinger(true, 10/*linger_timeout_in_seconds*/);
             _outputStream = new DataOutputStream(_socket.getOutputStream());
             _inputStream = new DataInputStream(_socket.getInputStream());
-         } catch (SocketException e) {
-            e.printStackTrace();
          } catch (IOException e) {
             e.printStackTrace();
          }
@@ -128,7 +124,6 @@ public abstract class SocketConnector extends Thread
       // Receive the ID of the incoming event from the client and
       // create an event object of the appropriate type with data
       // from the stream
-      SerializableObject inObj = null;
       int msgSize = _inputStream.readInt();
       byte[] msgBuf = new byte[msgSize];
       _inputStream.readFully(msgBuf);
@@ -140,7 +135,7 @@ public abstract class SocketConnector extends Thread
       System.arraycopy(msgBuf, 0, diagBuf, 4, msgSize);
       if (FULL_BUFFER_DUMP_TO_DIAG) {
          StringBuilder sb = new StringBuilder();
-         sb.append("recieved object:");
+         sb.append("received object:");
          appendByteBufferDump(sb, diagBuf);
          diag(sb.toString());
       }
@@ -152,7 +147,7 @@ public abstract class SocketConnector extends Thread
          // create an event object of the appropriate type with data
          // from the stream
          String eventID = SerializableObject.readString(inStream);
-         inObj = SerializableFactory.readObject(eventID, inStream);
+         SerializableObject inObj = SerializableFactory.readObject(eventID, inStream);
          if (inObj != null) {
             diag("received object: " + inObj);
             boolean handled = false;
@@ -191,7 +186,7 @@ public abstract class SocketConnector extends Thread
                handled = true;
             }
             if (!handled) {
-               processRecievedObject(inObj);
+               processReceivedObject(inObj);
             }
          }
       }

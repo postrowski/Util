@@ -6,8 +6,8 @@ import java.io.OutputStream;
 
 public class LockableDataOutputStream extends DataOutputStream{
 
-   public Semaphore _lock;
-   private long _lockTimeMillis;
+   public final Semaphore _lock;
+   private      long      _lockTimeMillis;
 
    public LockableDataOutputStream(OutputStream out)
    {

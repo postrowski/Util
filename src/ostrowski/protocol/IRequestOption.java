@@ -5,19 +5,19 @@ import java.io.DataOutputStream;
 
 public interface IRequestOption
 {
-   public String getName();
+   String getName();
 
-   public int getIntValue();
+   int getIntValue();
 
-   public boolean isEnabled();
+   boolean isEnabled();
 
-   public void setAnswerStr(String value);
+   void setAnswerStr(String value);
 
-   public void setAnswerID(int i);
+   void setAnswerID(int i);
 
-   public void setEnabled(boolean b);
+   void setEnabled(boolean b);
 
-   public void serializeToStream(DataOutputStream out);
+   void serializeToStream(DataOutputStream out);
 
-   public void serializeFromStream(DataInputStream in);
+   void serializeFromStream(DataInputStream in);
 }

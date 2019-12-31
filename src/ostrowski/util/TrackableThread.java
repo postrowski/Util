@@ -1,7 +1,3 @@
-/**
- *
- */
-
 package ostrowski.util;
 
 // Java Imports
@@ -10,13 +6,19 @@ package ostrowski.util;
 
 
    public class TrackableThread extends Thread {
-      public TrackableThread()                                                 { super();                    initialize();};
-      public TrackableThread(Runnable target)                                  { super(target);              initialize();};
-      public TrackableThread(Runnable target, String name)                     { super(target, name);        initialize();};
-      public TrackableThread(String name)                                      { super(name);                initialize();};
-      public TrackableThread(ThreadGroup group, Runnable target)               { super(group, target);       initialize();};
-      public TrackableThread(ThreadGroup group, Runnable target, String name)  { super(group, target, name); initialize();};
-      public TrackableThread(ThreadGroup group, String name)                   { super(group, name);         initialize();};
+      public TrackableThread()                                                 { super();                    initialize();}
+
+      public TrackableThread(Runnable target)                                  { super(target);              initialize();}
+
+      public TrackableThread(Runnable target, String name)                     { super(target, name);        initialize();}
+
+      public TrackableThread(String name)                                      { super(name);                initialize();}
+
+      public TrackableThread(ThreadGroup group, Runnable target)               { super(group, target);       initialize();}
+
+      public TrackableThread(ThreadGroup group, Runnable target, String name)  { super(group, target, name); initialize();}
+
+      public TrackableThread(ThreadGroup group, String name)                   { super(group, name);         initialize();}
 
       private void initialize() {
          _diagnosticAssociations = null;

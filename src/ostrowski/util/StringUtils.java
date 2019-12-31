@@ -20,7 +20,9 @@ public class StringUtils {
    //       so it is much more efficient.
    // Basically, it is never safe to alter the order of this list, because an entry in the database may have
    // been created with the old order, and thus would not match the same list built using the new order.
-   static private final String _delimiters = "^|~`!@#$%&*()_+/<>?;:,.-=[]\"\'{}¤¶§ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890•¦ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥ƒáíóúñÑªº¿¬½¼¡«»¯ßµ±÷˜°·² ";
+   static private final String _delimiters = "^|~`!@#$%&*()_+/<>?;:,.-=[]\"'{}¤¶§" +
+                                             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
+                                             "•¦ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥ƒáíóúñÑªº¿¬½¼¡«»¯ßµ±÷˜°·² ";
    static public char findDelimiter(Vector<String> stringList) {
       boolean found;
       String testcase;
@@ -49,24 +51,24 @@ public class StringUtils {
    }
 
    static public String delimitList(Vector<String> stringList) {
-      String str = "";
+      StringBuilder str = new StringBuilder();
       char delimiter = findDelimiter(stringList);
       for (int i = 0; i < stringList.size(); i++) {
-         str += delimiter;
-         str += stringList.elementAt(i);
+         str.append(delimiter);
+         str.append(stringList.elementAt(i));
       }
 
-      return str;
+      return str.toString();
    }
 
    static public String joinList(Vector<String> stringList, String delimString)
    {
-      String str = "";
+      StringBuilder str = new StringBuilder();
       for (int i = 0; i < stringList.size(); ++i) {
-         str += delimString;
-         str += stringList.elementAt(i);
+         str.append(delimString);
+         str.append(stringList.elementAt(i));
       }
-      return str;
+      return str.toString();
    }
 
    static public String joinList(Vector<String> stringList)
@@ -120,17 +122,17 @@ public class StringUtils {
 
    static public String stripAndReplace(String before, String strip, char replace) {
       char temp;
-      String after = new String();
+      StringBuilder after = new StringBuilder();
       for (int i = 0; i < before.length(); i++) {
          temp = before.charAt(i);
          if ((strip.indexOf(temp)) == -1) {
-            after += temp;
+            after.append(temp);
          }
          else {
-            after += replace;
+            after.append(replace);
          }
       }
-      return after;
+      return after.toString();
    }
 
    static public String base64Encode(byte[] data) {
@@ -162,12 +164,12 @@ public class StringUtils {
    }
 
    // Get the Universal time zone (GMT) for getting all timeStamps
-   private static TimeZone UNIVERSAL_TIMEZONE  = TimeZone.getTimeZone("GMT");
+   private static final TimeZone UNIVERSAL_TIMEZONE      = TimeZone.getTimeZone("GMT");
    // This SimpleDateFormat object is used by the static timeStamp() method.
    // Since the DateFormatter never changes, we make it static, to avoid
    // construction/destruction of this object.
    // Date Format
-   public static final String DATE_FORMAT_WITH_MILLIS = "MM/dd/yy HH:mm:ss.SSS"; // used by Diagnostics & Semaphore
+   public static final  String   DATE_FORMAT_WITH_MILLIS = "MM/dd/yy HH:mm:ss.SSS"; // used by Diagnostics & Semaphore
                                                                                  // SerializableObject to serialize Date objects as strings
    // Date Formatters. Although these are static, we initialize them
    // to null so that before they can be used, they are created, and
@@ -175,17 +177,17 @@ public class StringUtils {
    private static SimpleDateFormat DATE_FORMATTER = null;
 
    /**
-    * Method ensureDateFormaterisValid. This method makes sure that the date formatter
+    * Method ensureDateFormaterIsValid. This method makes sure that the date formatter
     * are initialized, and they have their timezones set to GMT. It should be called any
     * time we are about to use a date formatter, and we find that either one is null. It
     * should probably not be called every time before we use a date formatter, because the
     * synchronized access on _universalTimeZone might be expensive.
     * Instead, call it like this:
     *       if (_dateFormater == null) {
-    *          ensureDateFormaterisValid();
+    *          ensureDateFormaterIsValid();
     *       }
     */
-   private static void ensureDateFormaterisValid() {
+   private static void ensureDateFormaterIsValid() {
       // Make sure that only one thread can be here at a time by synchronizing
       // on a static object. The choice of synchronizing on the _universalTimeZone
       // was arbitrary. It could be any static, initialized, object.
@@ -224,7 +226,7 @@ public class StringUtils {
     */
    public static String getTimeStamp(Date date) {
       if (DATE_FORMATTER == null) {
-         ensureDateFormaterisValid();
+         ensureDateFormaterIsValid();
       }
       return DATE_FORMATTER.format(date);
    }

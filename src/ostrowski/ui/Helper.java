@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Text;
 
 public class Helper
 {
-   protected List<Control>  _controlList  = new ArrayList<>();
+   protected final List<Control> _controlList = new ArrayList<>();
 
    public static Composite createComposite(Composite parent, int hSpan, int gridDataStyle)
    {

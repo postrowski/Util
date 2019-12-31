@@ -13,7 +13,7 @@ public class ClientID extends SerializableObject
 {
    private int _id = -1;
 
-   public ClientID() {};
+   public ClientID() {}
 
    public ClientID(int id) { _id = id;}
 

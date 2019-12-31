@@ -24,9 +24,9 @@ public abstract class SocketConnector extends Thread
 {
    public static final int DEFAULT_PORT = 1777;
 
-   abstract public void processRecievedObject(SerializableObject inObj);
+   abstract public void processReceivedObject(SerializableObject inObj);
 
-   abstract public void handleDisconnect(SocketConnector diconnectedConnection);
+   abstract public void handleDisconnect(SocketConnector disconnectedConnection);
 
    abstract public void handleConnect(SocketConnector connectedConnection);
 
@@ -129,7 +129,7 @@ public abstract class SocketConnector extends Thread
    private void readAndProcessMessageFromSocket() throws IOException
    {
       StringBuffer sb = new StringBuffer();
-      sb.append("recieved object:");
+      sb.append("received object:");
       // Receive the ID of the incoming event from the client and
       // create an event object of the appropriate type with data
       // from the stream
@@ -175,7 +175,7 @@ public abstract class SocketConnector extends Thread
             }
          }
          if (!handled) {
-            processRecievedObject(inObj);
+            processReceivedObject(inObj);
          }
       }
    }

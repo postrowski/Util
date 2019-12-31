@@ -26,20 +26,20 @@ public class DiagParameters extends ParametersBase {
    public int     messageQueueMaxSize;
 
 // TO_DO: Define a name for your new variable.
-   private static String DIAG_LABEL_NAME                  = "DiagLabel";
-   private static String LOGFILE_BASE_NAME                = "LogFileBase";
-   private static String LOGFILE_DIR_NAME                 = "LogFileDir";
-   private static String MAX_LOGFILE_SIZE_NAME            = "MaxLogFileSize";
-   private static String MAX_LOGFILES_NAME                = "MaxLogFiles";
-   private static String FAST_LOG_NAME                    = "FastLog";
-   private static String LOG_INFO_TO_CONSOLE_NAME         = "LogInfoToConsole";
-   private static String LOG_INTO_TO_FILE_NAME            = "LogInfoToFile";
-   private static String LOG_EVENT_LEVEL_NAME             = "LogEventLevel";
-   private static String LOG_ERROR_LEVEL_NAME             = "LogErrorLevel";
-   private static String LOG_MODULE_MASK_NAME             = "LogModuleMask";
-   private static String TRACE_PROTOCAL_MASK_NAME         = "TraceProtocolMask";
-   private static String TRACE_PROTOCAL_DIRECTION_NAME    = "TraceProtocolDirection";
-   private static String MESSAGE_QUEUE_MAX_SIZE_NAME      = "MessageQueueMaxSize";
+   private static final String DIAG_LABEL_NAME               = "DiagLabel";
+   private static final String LOGFILE_BASE_NAME             = "LogFileBase";
+   private static final String LOGFILE_DIR_NAME              = "LogFileDir";
+   private static final String MAX_LOGFILE_SIZE_NAME         = "MaxLogFileSize";
+   private static final String MAX_LOGFILES_NAME             = "MaxLogFiles";
+   private static final String FAST_LOG_NAME                 = "FastLog";
+   private static final String LOG_INFO_TO_CONSOLE_NAME      = "LogInfoToConsole";
+   private static final String LOG_INTO_TO_FILE_NAME         = "LogInfoToFile";
+   private static final String LOG_EVENT_LEVEL_NAME          = "LogEventLevel";
+   private static final String LOG_ERROR_LEVEL_NAME          = "LogErrorLevel";
+   private static final String LOG_MODULE_MASK_NAME          = "LogModuleMask";
+   private static final String TRACE_PROTOCAL_MASK_NAME      = "TraceProtocolMask";
+   private static final String TRACE_PROTOCAL_DIRECTION_NAME = "TraceProtocolDirection";
+   private static final String MESSAGE_QUEUE_MAX_SIZE_NAME   = "MessageQueueMaxSize";
 
    public DiagParameters (String propertiesFileName) {
       super (propertiesFileName);

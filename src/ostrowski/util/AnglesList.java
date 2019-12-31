@@ -5,7 +5,7 @@ import java.util.List;
 
 public class AnglesList
 {
-   List<AnglePair> _list = new ArrayList<>();
+   final List<AnglePair> _list = new ArrayList<>();
    public AnglesList() {
    }
 
@@ -14,7 +14,7 @@ public class AnglesList
       // Look through the current collection to see if we can combine this new angle with any existing angles
       for (int i=0 ; i<_list.size() ; i++) {
          AnglePair pairI = _list.get(i);
-         AnglePair union = newAnglePair.unionWithIfOverlapping(pairI, 0.01/*tollerance*/);
+         AnglePair union = newAnglePair.unionWithIfOverlapping(pairI, 0.01/*tolerance*/);
          if (union != null) {
             // if this had an overlap with the entry from the list,
             // so we no longer need pairI in this list.

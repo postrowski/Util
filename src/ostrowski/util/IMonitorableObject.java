@@ -4,7 +4,7 @@ import java.util.Vector;
 
 public interface IMonitorableObject
 {
-   public enum RegisterResults {
+   enum RegisterResults {
       Success,
       ThisAlreadyWatching,
       OthersAlsoWatching,
@@ -12,7 +12,7 @@ public interface IMonitorableObject
       Failure
    }
 
-   public enum UnRegisterResults {
+   enum UnRegisterResults {
       Success,
       ThisStillWatching,
       ThisAndOthersStillWatching,
@@ -31,33 +31,33 @@ public interface IMonitorableObject
 //   public Vector<IMonitoringObject> getSnapShotOfWatchers();
 //   public String getObjectIDString();
 
-   public final MonitoredObject _monitoredObj = new MonitoredObject("");
+   MonitoredObject _monitoredObj = new MonitoredObject("");
 
-   default public void notifyWatchers(IMonitorableObject originalWatchedObject,
-                              IMonitorableObject modifiedWatchedObject,
-                              Object changeNotification,
-                              Vector<IMonitoringObject> skipList,
-                              Diagnostics diag)  {
+   default void notifyWatchers(IMonitorableObject originalWatchedObject,
+                               IMonitorableObject modifiedWatchedObject,
+                               Object changeNotification,
+                               Vector<IMonitoringObject> skipList,
+                               Diagnostics diag)  {
       _monitoredObj.notifyWatchers(originalWatchedObject, modifiedWatchedObject, changeNotification, skipList, diag);
    }
 
-   default public String getObjectIDString() {
+   default String getObjectIDString() {
       return _monitoredObj.getObjectIDString();
    }
 
-   default public Vector<IMonitoringObject> getSnapShotOfWatchers() {
+   default Vector<IMonitoringObject> getSnapShotOfWatchers() {
       return _monitoredObj.getSnapShotOfWatchers();
    }
 
-   default public RegisterResults registerAsWatcher(IMonitoringObject watcherObject, Diagnostics diag) {
+   default RegisterResults registerAsWatcher(IMonitoringObject watcherObject, Diagnostics diag) {
       return _monitoredObj.registerAsWatcher(watcherObject, diag);
    }
 
-   default public UnRegisterResults unregisterAsWatcher(IMonitoringObject watcherObject, Diagnostics diag) {
+   default UnRegisterResults unregisterAsWatcher(IMonitoringObject watcherObject, Diagnostics diag) {
       return _monitoredObj.unregisterAsWatcher(watcherObject, diag);
    }
 
-   default public UnRegisterResults unregisterAsWatcherAllInstances(IMonitoringObject watcherObject, Diagnostics diag) {
+   default UnRegisterResults unregisterAsWatcherAllInstances(IMonitoringObject watcherObject, Diagnostics diag) {
       return _monitoredObj.unregisterAsWatcherAllInstances(watcherObject, diag);
    }
 

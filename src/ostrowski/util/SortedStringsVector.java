@@ -13,7 +13,7 @@ import java.util.Vector;
  */
 
 public class SortedStringsVector {
-   Vector<String> _data;
+   final Vector<String> _data;
    public SortedStringsVector() {
       _data = new Vector<>();
    }
