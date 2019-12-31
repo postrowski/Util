@@ -262,11 +262,11 @@ public class Diagnostics {
       // This string is used to reduce the number of times an association string is built.
       // Any time it is null, it must be rebuilt. Therefore, any time an entry in the
       // operationIDsList or the associationTable changes, we set it to null.
-      private String    _prebuiltAssociations;
+      private String                                        _prebuiltAssociations;
       private Hashtable<String, Hashtable<String, Integer>> _associationTable;
-      Vector<String>    _operationIDsList;
-      private Vector<String>    _operationNamesList;
-      private boolean   _unnamedPartOfNamedOperation;
+      Vector<String>                                        _operationIDsList;
+      private Vector<String>                                _operationNamesList;
+      private boolean                                       _unnamedPartOfNamedOperation;
 
       public DiagnosticAssociations() {
          _prebuiltAssociations        = null;
@@ -280,6 +280,9 @@ public class Diagnostics {
          DiagnosticAssociations clone = null;
          try {
             clone = (DiagnosticAssociations) super.clone();
+            clone._associationTable    = new Hashtable<>();
+            clone._operationIDsList    = new Vector<>();
+            clone._operationNamesList  = new Vector<>();
             clone.setData(this);
          } catch (CloneNotSupportedException e) {
          }
