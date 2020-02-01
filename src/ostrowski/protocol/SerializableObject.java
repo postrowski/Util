@@ -167,14 +167,15 @@ public abstract class SerializableObject implements Cloneable
 
    // int[] serialization
    public static void writeToStream(byte[] data, DataOutputStream out) throws IOException {
-      out.writeByte(data.length);
+      out.writeInt(data.length);
       for (byte datum : data) {
          out.writeByte(datum);
       }
    }
 
    public static byte[] readByteArray(DataInputStream in) throws IOException {
-      byte[] array = new byte[in.readByte()];
+      int size = in.readInt();
+      byte[] array = new byte[size];
       for (int i=0 ; i<array.length ; i++) {
          array[i] = in.readByte();
       }
