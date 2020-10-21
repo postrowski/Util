@@ -17,14 +17,16 @@
     <orderEntry type="module-library">
       <library name="swt.jar">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/swt.jar!/" />
+          <root url="jar://C:/Program Files/Java/swt/swt.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://C:/Program Files/Java/swt/src.zip!/" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="junit4">
+      <library name="junit-4.12.jar">
         <CLASSES>
           <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.12.jar!/" />
         </CLASSES>
