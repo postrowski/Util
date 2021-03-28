@@ -103,39 +103,39 @@ public class Diagnostics {
    private static final MessageFormat MSG_FORMAT_EXCEPTIONAL = new MessageFormat(MESSAGE_XCPT_FORMAT);
 
    // Property File Name
-   private String _propertyFile;
+   private String propertyFile;
 
    // Properties for Log File Name
-   private String           _filePath;
-   private int              _fileNumber;
-   private RandomAccessFile _file;
-   private boolean          _fastDiag;
-   private long             _availableFileSizeRemaining;
-   private long             _messageNumber;
+   private String           filePath;
+   private int              fileNumber;
+   private RandomAccessFile file;
+   private boolean          fastDiag;
+   private long             availableFileSizeRemaining;
+   private long             messageNumber;
 
-   // Boolean bits for Loggings to File/Console
-   private boolean _logInfoToConsole = true;
-   private boolean _logInfoToFile = true;
+   // Boolean bits for Logging to File/Console
+   private boolean logInfoToConsole = true;
+   private boolean logInfoToFile    = true;
 
    // To obtain parameters from Property File
-   private DiagParameters _params;
+   private DiagParameters params;
 
-   MessageQueue _queue;
-   private IOThread _myThread;
-   protected boolean _endDiags = false;
+   MessageQueue queue;
+   private IOThread  myThread;
+   protected boolean endDiags = false;
 
-   private final Semaphore _lockThis;
+   private final Semaphore lockThis;
 
    /**
     * DiagMsg is the class that contains Diagnostics message.
     */
    class DiagMsg {
-      public String     _type;
-      public       String    _message;
-      public final String    _timeStamp;
-      public final String    _threadName;
-      public final Exception _exception;
-      public final String    _associations;
+      public String       type;
+      public       String message;
+      public final String    timeStamp;
+      public final String    threadName;
+      public final Exception exception;
+      public final String    associations;
 
       /**
        * Creates an instance of this class with a diagnostic message
@@ -147,12 +147,12 @@ public class Diagnostics {
        * @param ex          the exception to log (null if no exception occured)
        */
       DiagMsg(String type, String message, String timeStamp, String threadName, Exception ex) {
-         _type         = type;
-         _message      = message;
-         _timeStamp    = timeStamp;
-         _threadName   = threadName;
-         _exception    = ex;
-         _associations = getAssociationsStringForThisThread();
+         this.type = type;
+         this.message = message;
+         this.timeStamp = timeStamp;
+         this.threadName = threadName;
+         exception = ex;
+         associations = getAssociationsStringForThisThread();
          if (ex != null) {
             Vector<String> errors = new Vector<>();
             errors.add(timeStamp);
@@ -168,13 +168,13 @@ public class Diagnostics {
     * @param propertyFile  the filename that defines the properties for diagnostic utility
     */
    public Diagnostics(String propertyFile, DiagParameters diagParams, boolean startNewFile) {
-      _propertyFile  = propertyFile;
+      this.propertyFile = propertyFile;
 
       // Diagnostics Properties
-      _params = diagParams;
+      params = diagParams;
 
-      _lockThis = new Semaphore("Diagnostics.Diagnostics", Semaphore.CLASS_DIAGNOSTICS);
-      _associationsTable = new Hashtable<>();
+      lockThis = new Semaphore("Diagnostics.Diagnostics", Semaphore.CLASS_DIAGNOSTICS);
+      associationsTable = new Hashtable<>();
 
       beginDiagnostics(true, startNewFile);
    }
@@ -186,31 +186,31 @@ public class Diagnostics {
     * @param bAllowLogToFile  sets file logging
     */
    public Diagnostics(URL context, String propertyFile, boolean bAllowLogToFile, boolean startNewFile) {
-      _propertyFile  = propertyFile;
+      this.propertyFile = propertyFile;
 
-      // Obtain parameters from _propertyFile
-      _params = new DiagParameters(context, _propertyFile);
+      // Obtain parameters from propertyFile
+      params = new DiagParameters(context, this.propertyFile);
 
-      _lockThis = new Semaphore("Diagnostics.Diagnostics", Semaphore.CLASS_DIAGNOSTICS);
-      _associationsTable = new Hashtable<>();
+      lockThis = new Semaphore("Diagnostics.Diagnostics", Semaphore.CLASS_DIAGNOSTICS);
+      associationsTable = new Hashtable<>();
 
       beginDiagnostics(bAllowLogToFile, startNewFile);
    }
 
    private void beginDiagnostics(boolean bAllowLogToFile, boolean startNewFile) {
-      _endDiags = false;
+      endDiags = false;
 
-      _logInfoToConsole = _params.logInfoToConsole.equalsIgnoreCase("yes");
-      _logInfoToFile    = _params.logInfoToFile.equalsIgnoreCase("yes");
-      enableFastLog(_params.fastLog.equalsIgnoreCase("yes"));
+      logInfoToConsole = params.logInfoToConsole.equalsIgnoreCase("yes");
+      logInfoToFile = params.logInfoToFile.equalsIgnoreCase("yes");
+      enableFastLog(params.fastLog.equalsIgnoreCase("yes"));
 
-      _fileNumber                 = 1;        // _fileNumber starts from 1 to maxLogFiles
-      _availableFileSizeRemaining = _params.maxLogFileSize * (long)1000;
-      _filePath                   = null;
-      _file                       = null;
+      fileNumber = 1;        // fileNumber starts from 1 to maxLogFiles
+      availableFileSizeRemaining = params.maxLogFileSize * (long)1000;
+      filePath = null;
+      file = null;
 
       initLog(startNewFile);
-      System.out.println(_params.diagLabel);
+      System.out.println(params.diagLabel);
       /*
       String temp = "0123456789abcdef";
       System.out.println("line separator[0] == " + temp.charAt(lineSeparator.charAt(0) >> 4) + temp.charAt(lineSeparator.charAt(0) & 0xF));
@@ -227,9 +227,9 @@ public class Diagnostics {
       System.out.println("\\n[2] == " + temp.charAt(lineSeparator2.charAt(2) >> 4) + temp.charAt(lineSeparator2.charAt(2) & 0xF));
       */
 
-      _queue = new MessageQueue(_params.messageQueueMaxSize);
-      _myThread = new IOThread("DiagThread");
-      _myThread.start();
+      queue = new MessageQueue(params.messageQueueMaxSize);
+      myThread = new IOThread("DiagThread");
+      myThread.start();
    }
 
    @SuppressWarnings("serial")
@@ -247,27 +247,27 @@ public class Diagnostics {
       // This string is used to reduce the number of times an association string is built.
       // Any time it is null, it must be rebuilt. Therefore, any time an entry in the
       // operationIDsList or the associationTable changes, we set it to null.
-      private String                                        _prebuiltAssociations;
-      private Hashtable<String, Hashtable<String, Integer>> _associationTable;
-      Vector<String>                                        _operationIDsList;
-      private Vector<String>                                _operationNamesList;
-      private boolean                                       _unnamedPartOfNamedOperation;
+      private String                                        prebuiltAssociations;
+      private Hashtable<String, Hashtable<String, Integer>> associationTable;
+      Vector<String> operationIDsList;
+      private Vector<String> operationNamesList;
+      private boolean        unnamedPartOfNamedOperation;
 
       public DiagnosticAssociations() {
-         _prebuiltAssociations        = null;
-         _associationTable            = new Hashtable<>();
-         _operationIDsList            = new Vector<>();
-         _operationNamesList          = new Vector<>();
-         _unnamedPartOfNamedOperation = false;
+         prebuiltAssociations = null;
+         associationTable = new Hashtable<>();
+         operationIDsList = new Vector<>();
+         operationNamesList = new Vector<>();
+         unnamedPartOfNamedOperation = false;
       }
       @Override
       public DiagnosticAssociations clone() {
          DiagnosticAssociations clone = null;
          try {
             clone = (DiagnosticAssociations) super.clone();
-            clone._associationTable    = new Hashtable<>();
-            clone._operationIDsList    = new Vector<>();
-            clone._operationNamesList  = new Vector<>();
+            clone.associationTable = new Hashtable<>();
+            clone.operationIDsList = new Vector<>();
+            clone.operationNamesList = new Vector<>();
             clone.setData(this);
          } catch (CloneNotSupportedException e) {
          }
@@ -276,11 +276,11 @@ public class Diagnostics {
       @SuppressWarnings("unchecked")
       public void setData(DiagnosticAssociations newData) {
          if (newData != null) {
-            _associationTable            = (Hashtable<String, Hashtable<String, Integer>>)(newData._associationTable.clone());
-            _prebuiltAssociations        = newData._prebuiltAssociations;
-            _operationIDsList            = (Vector<String>)(newData._operationIDsList.clone());
-            _operationNamesList          = (Vector<String>)(newData._operationNamesList.clone());
-            _unnamedPartOfNamedOperation = newData._unnamedPartOfNamedOperation;
+            associationTable = (Hashtable<String, Hashtable<String, Integer>>)(newData.associationTable.clone());
+            prebuiltAssociations = newData.prebuiltAssociations;
+            operationIDsList = (Vector<String>)(newData.operationIDsList.clone());
+            operationNamesList = (Vector<String>)(newData.operationNamesList.clone());
+            unnamedPartOfNamedOperation = newData.unnamedPartOfNamedOperation;
          }
          else {
             // Set to default value (as defined by constructor)
@@ -290,19 +290,19 @@ public class Diagnostics {
 
       public void appendOperations(DiagnosticAssociations operationsSource) {
          // If there are no operationIDs in the list, do nothing.
-         if (operationsSource._operationIDsList.size() > 0) {
-            _prebuiltAssociations = null;
-            String lastName = (operationsSource._operationNamesList.lastElement());
+         if (operationsSource.operationIDsList.size() > 0) {
+            prebuiltAssociations = null;
+            String lastName = (operationsSource.operationNamesList.lastElement());
             String opID;
             String opName = null;
-            for (int i=0 ; i<operationsSource._operationIDsList.size() ; i++) {
-               opID   = (operationsSource._operationIDsList.elementAt(i));
-               opName = (operationsSource._operationNamesList.elementAt(i));
+            for (int i = 0; i<operationsSource.operationIDsList.size() ; i++) {
+               opID   = (operationsSource.operationIDsList.elementAt(i));
+               opName = (operationsSource.operationNamesList.elementAt(i));
                beginOperation(opID, opName, false/*printDiagnostic*/);
             }
             // If the last opName was null, then operationsSource was an Unnamed operation
             if ((opName == null) && (lastName != null)) {
-               operationsSource._unnamedPartOfNamedOperation = true;
+               operationsSource.unnamedPartOfNamedOperation = true;
             }
          }
       }
@@ -328,23 +328,23 @@ public class Diagnostics {
       {
          boolean unNamedOperationIdentified = false;
 
-         int operationNameCount = _operationNamesList.size();
+         int operationNameCount = operationNamesList.size();
          if (operationNameCount > 0) {
-            if (_operationNamesList.elementAt(operationNameCount-1) == null) {
+            if (operationNamesList.elementAt(operationNameCount - 1) == null) {
                // remove the previous 'null' entry, which indicated an unNamed operation
                // was inprogress, and we have now identified it.
-               _operationNamesList.remove(operationNameCount-1);
+               operationNamesList.remove(operationNameCount - 1);
                // replace the 'null' entry with the now named operation
                // This will create two IDENTICAL entries for the named entry.
-               _operationNamesList.add(operationName);
+               operationNamesList.add(operationName);
                unNamedOperationIdentified = true;
             }
          }
-         _operationIDsList.add(operationID);
-         _operationNamesList.add(operationName);
+         operationIDsList.add(operationID);
+         operationNamesList.add(operationName);
          // clear out the pre-build association string so we force
          // the association string to be re-built next time its used.
-         _prebuiltAssociations = null;
+         prebuiltAssociations = null;
 
          if (printDiagnostic) {
             if (unNamedOperationIdentified) {
@@ -360,9 +360,9 @@ public class Diagnostics {
       {
          boolean operationTerminatingNamedPortionOfUnNamedOperation = false;
 
-         int operationNameCount = _operationNamesList.size();
+         int operationNameCount = operationNamesList.size();
          if (operationNameCount > 0) {
-            String lastOperationNameInProgress = _operationNamesList.elementAt(operationNameCount-1);
+            String lastOperationNameInProgress = operationNamesList.elementAt(operationNameCount - 1);
             if (operationNameCount > 1) {
                // If Operation (N) IS Operation (N-1) (not just equal, but the same object),
                // then we are in a case were Operation (N-1) was unnamed, and Operation (N)
@@ -371,7 +371,7 @@ public class Diagnostics {
                // because that is not the true end of the operation. The true end of
                // that operation is when the unnamed operation (Operation (N)) terminate.
                operationTerminatingNamedPortionOfUnNamedOperation =
-                  (lastOperationNameInProgress == _operationNamesList.elementAt(operationNameCount-2));
+                  (lastOperationNameInProgress == operationNamesList.elementAt(operationNameCount - 2));
             }
             // check to ensure that the name specified in the parameter matches the
             // name that we just removed from the list. If the parameter is null,
@@ -394,7 +394,7 @@ public class Diagnostics {
                      // However, if this operation was merely one portion of a named operation
                      // that occurred on another thread, then we don't need to give it the
                      // type of TYPE_OPERATION
-                     if (_unnamedPartOfNamedOperation) {
+                     if (unnamedPartOfNamedOperation) {
                         logMessage(TYPE_INFO, "Unnamed Operation ended.");
                      }
                      else {
@@ -408,11 +408,11 @@ public class Diagnostics {
             }
             // Don't change the operations until after we have printed anything we need to
             // to the diags, or those diags won't have the operation info in them.
-            _operationIDsList.removeElementAt(operationNameCount-1);
-            _operationNamesList.removeElementAt(operationNameCount-1);
+            operationIDsList.removeElementAt(operationNameCount - 1);
+            operationNamesList.removeElementAt(operationNameCount - 1);
             // clear out the pre-build association string so we force
             // the association string to be re-built next time its used.
-            _prebuiltAssociations = null;
+            prebuiltAssociations = null;
          }
          else {
             try {
@@ -430,11 +430,11 @@ public class Diagnostics {
 
          if ((itemName != null) && (itemValue != null))
          {
-            Hashtable<String, Integer> valueTable = _associationTable.get(itemName);
+            Hashtable<String, Integer> valueTable = associationTable.get(itemName);
             Integer occuranceCount;
             if (valueTable == null) {
                valueTable = new Hashtable<>();
-               _associationTable.put(itemName, valueTable);
+               associationTable.put(itemName, valueTable);
                occuranceCount = null;
             }
             else {
@@ -445,7 +445,7 @@ public class Diagnostics {
                // If this is the first record of this value,
                // clear out the pre-build association string so we force
                // the association string to be re-built next time its used.
-               _prebuiltAssociations = null;
+               prebuiltAssociations = null;
             }
             else {
                occuranceCount = occuranceCount + 1;
@@ -467,7 +467,7 @@ public class Diagnostics {
       {
          if ((itemName != null) && (itemValue != null))
          {
-            Hashtable<String, Integer> valueTable = _associationTable.get(itemName);
+            Hashtable<String, Integer> valueTable = associationTable.get(itemName);
             if (valueTable != null) {
                Integer occuranceCount = valueTable.get(itemValue);
                if (occuranceCount != null) {
@@ -475,7 +475,7 @@ public class Diagnostics {
                      valueTable.remove(itemValue);
                      // clear out the pre-build association string so we force
                      // the association string to be re-built next time its used.
-                     _prebuiltAssociations = null;
+                     prebuiltAssociations = null;
                   }
                   else {
                      occuranceCount = occuranceCount - 1;
@@ -483,7 +483,7 @@ public class Diagnostics {
                   }
                }
                if (valueTable.size() == 0) {
-                  _associationTable.remove(itemName);
+                  associationTable.remove(itemName);
                }
             }
          }
@@ -493,14 +493,14 @@ public class Diagnostics {
       {
          // Check for a pre-build association string so that we don't have to
          // re-build this string again if nothing has changed since our last diag.
-         if (_prebuiltAssociations == null) {
+         if (prebuiltAssociations == null) {
             StringBuilder assocBuffer = new StringBuilder();
             // Operation IDs are garuanteed to be unique, although more than one may exist.
-            for (int i=0 ; i<_operationIDsList.size() ; i++) {
+            for (int i = 0; i < operationIDsList.size() ; i++) {
                assocBuffer.append('<');
                assocBuffer.append(ASSOCIATION_OPERATION_ID);
                assocBuffer.append('>');
-               assocBuffer.append(_operationIDsList.elementAt(i));
+               assocBuffer.append(operationIDsList.elementAt(i));
                assocBuffer.append("</");
                assocBuffer.append(ASSOCIATION_OPERATION_ID);
                assocBuffer.append('>');
@@ -511,11 +511,11 @@ public class Diagnostics {
             Enumeration<String> itemNames;
             Enumeration<String> itemValues;
             Hashtable<String, Integer> itemValueTable;
-            itemNames = _associationTable.keys();
+            itemNames = associationTable.keys();
             while (itemNames.hasMoreElements()) {
                itemName = itemNames.nextElement();
                if (itemName != null) {
-                  itemValueTable = _associationTable.get(itemName);
+                  itemValueTable = associationTable.get(itemName);
                   if (itemValueTable != null) {
                      itemValues = itemValueTable.keys();
                      while (itemValues.hasMoreElements()) {
@@ -535,22 +535,22 @@ public class Diagnostics {
                   }
                }
             }
-            _prebuiltAssociations = assocBuffer.toString();
+            prebuiltAssociations = assocBuffer.toString();
          }
-         return _prebuiltAssociations;
+         return prebuiltAssociations;
       }
 
       public String getOperationsString() {
          StringBuilder results = new StringBuilder();
          results.append('[');
          boolean addComma = false;
-         for (int i=0 ; i<_operationIDsList.size() ; i++) {
+         for (int i = 0; i < operationIDsList.size() ; i++) {
             if (addComma) {
                results.append(", ");
             }
-            results.append(_operationIDsList.get(i));
+            results.append(operationIDsList.get(i));
             results.append(':');
-            results.append(_operationNamesList.get(i));
+            results.append(operationNamesList.get(i));
             addComma = true;
          }
          results.append(']');
@@ -558,13 +558,13 @@ public class Diagnostics {
       }
    }
 
-   private volatile int _nextOperationID;
-   private final Hashtable<Thread, DiagnosticAssociations>    _associationsTable;
+   private volatile int                                    nextOperationID;
+   private final Hashtable<Thread, DiagnosticAssociations> associationsTable;
 
    public void beginUnNamedOperation()
    {
       DiagnosticAssociations diagnosticAssociations = getAssociationsForThisThread();
-      String operationID = "" + _nextOperationID++;
+      String operationID = "" + nextOperationID++;
       diagnosticAssociations.beginOperation(operationID, null/*operationName*/, false/*printDiagnostic*/);
    }
 
@@ -577,7 +577,7 @@ public class Diagnostics {
    public void beginOperation(String operationName)
    {
       DiagnosticAssociations diagnosticAssociations = getAssociationsForThisThread();
-      String operationID = "" + _nextOperationID++;
+      String operationID = "" + nextOperationID++;
       diagnosticAssociations.beginOperation(operationID, operationName, true/*printDiagnostic*/);
    }
 
@@ -646,16 +646,16 @@ public class Diagnostics {
       // our own Objects when a threads reference count goes to zero
       if (thread instanceof TrackableThread) {
          TrackableThread trackableThread = (TrackableThread) thread;
-         if (trackableThread._diagnosticAssociations == null) {
-            trackableThread._diagnosticAssociations = new DiagnosticAssociations();
+         if (trackableThread.diagnosticAssociations == null) {
+            trackableThread.diagnosticAssociations = new DiagnosticAssociations();
          }
-         return (DiagnosticAssociations)(trackableThread._diagnosticAssociations);
+         return (DiagnosticAssociations)(trackableThread.diagnosticAssociations);
       }
 
-      DiagnosticAssociations diagnosticAssociations = _associationsTable.get(thread);
+      DiagnosticAssociations diagnosticAssociations = associationsTable.get(thread);
       if (diagnosticAssociations == null) {
          diagnosticAssociations = new DiagnosticAssociations();
-         _associationsTable.put(thread, diagnosticAssociations);
+         associationsTable.put(thread, diagnosticAssociations);
       }
       return diagnosticAssociations;
    }
@@ -673,13 +673,13 @@ public class Diagnostics {
       Thread thisThread = Thread.currentThread();
       if (thisThread instanceof TrackableThread) {
          TrackableThread thisTrackableThread = (TrackableThread) thisThread;
-         previousAssociations = (DiagnosticAssociations)(thisTrackableThread._diagnosticAssociations);
+         previousAssociations = (DiagnosticAssociations)(thisTrackableThread.diagnosticAssociations);
 
-         thisTrackableThread._diagnosticAssociations = newAssociations;
+         thisTrackableThread.diagnosticAssociations = newAssociations;
       }
       else {
-         previousAssociations = _associationsTable.get(thisThread);
-         _associationsTable.put(thisThread, newAssociations);
+         previousAssociations = associationsTable.get(thisThread);
+         associationsTable.put(thisThread, newAssociations);
       }
 
       if (previousAssociations == null) {
@@ -697,7 +697,7 @@ public class Diagnostics {
          return;
       }
 
-      _associationsTable.remove(thisThread);
+      associationsTable.remove(thisThread);
    }
    */
 
@@ -722,7 +722,7 @@ public class Diagnostics {
    public String getFirstOperationIDsForThread(Thread thread)
    {
       DiagnosticAssociations diagnosticAssociations = getAssociationsForThread(thread);
-      return diagnosticAssociations._operationIDsList.elementAt(0);
+      return diagnosticAssociations.operationIDsList.elementAt(0);
    }
 
    /**
@@ -735,22 +735,22 @@ public class Diagnostics {
       Vector<DiagMsg> messageWaiting = new Vector<>();
       DiagMsg message;
       // Lock the message queue so no new messages will be accepted
-      synchronized (_queue) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_queue._lockMessageQueue)) {
+      synchronized (queue) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(queue.lockMessageQueue)) {
 
-            _myThread = null;
-            _endDiags = true;
-            _queue.closeQueue();
+            myThread = null;
+            endDiags = true;
+            queue.closeQueue();
 
             // flush any remaining messages out of the queue.
-            while(_queue.getSize() > 0) {
+            while(queue.getSize() > 0) {
                // Retrieve message from queue.
-               message = _queue.getMessage();
+               message = queue.getMessage();
                messageWaiting.add(message);
             }
          }
          // wake up any thread that is waiting for an object to enter the queue.
-         _queue.notifyAll();
+         queue.notifyAll();
       }
       // display the message outside of the synchronized block to avoid a deadlock condition.
       while (!messageWaiting.isEmpty()){
@@ -765,12 +765,12 @@ public class Diagnostics {
     */
    public void resetDiagnostics(String propertyFile, DiagParameters diagParams, boolean startNewFile) {
       synchronized (this) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockThis)) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockThis)) {
 
             endDiagnostics();
 
-            _propertyFile  = propertyFile;
-            _params = diagParams;
+            this.propertyFile = propertyFile;
+            params = diagParams;
 
             beginDiagnostics(true, startNewFile);
 
@@ -787,12 +787,12 @@ public class Diagnostics {
     */
    public void logMessage(String type, String message, Exception ex) {
       synchronized (this) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockThis)) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockThis)) {
 
             DiagMsg mesg = new DiagMsg(type, message,
                                        StringUtils.getTimeStamp(),
                                        Thread.currentThread().getName(), ex);
-            _queue.addMessage(mesg);
+            queue.addMessage(mesg);
          }
       }
    }
@@ -805,13 +805,13 @@ public class Diagnostics {
     */
    public void logMessage(String type, String message) {
       synchronized (this) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockThis)) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockThis)) {
 
             DiagMsg mesg = new DiagMsg(type, message,
                                        StringUtils.getTimeStamp(),
                                        Thread.currentThread().getName(), null);
 
-            _queue.addMessage(mesg);
+            queue.addMessage(mesg);
          }
       }
    }
@@ -825,14 +825,14 @@ public class Diagnostics {
    public void logMessage(int type, String message) {
       // If we are not suppose to write Info messages to either
       // the console or the log file, then we ignore this message.
-      if (_logInfoToFile || _logInfoToConsole ) {
+      if (logInfoToFile || logInfoToConsole) {
          synchronized (this) {
-            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockThis)) {
+            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockThis)) {
 
                DiagMsg mesg = new DiagMsg(TYPE_INFO_STRING, message,
                                           StringUtils.getTimeStamp(),
                                           Thread.currentThread().getName(), null);
-               _queue.addMessage(mesg);
+               queue.addMessage(mesg);
             }
          }
       }
@@ -844,7 +844,7 @@ public class Diagnostics {
     */
    public void enableFastLog(boolean enable)
    {
-      _fastDiag = enable;
+      fastDiag = enable;
    }
 
    /**
@@ -854,16 +854,16 @@ public class Diagnostics {
     */
    public boolean isEnabledFastLog()
    {
-      return _fastDiag;
+      return fastDiag;
    }
 
    // This member is used to build the strings before they are placed into the log file,
    // so that we can write to the file as a single operation, which should reduce the
    // chance that a read on that file by an external app will read an incomplete file.
-   private StringBuffer _completeDataString;
-   private StringBuffer _emptyDataString;
-   boolean _fileOverwrite = false;
-   long _existingFileLength;
+   private StringBuffer completeDataString;
+   private StringBuffer emptyDataString;
+   boolean fileOverwrite = false;
+   long    existingFileLength;
 
    /**
     * Logs the message to file.
@@ -873,47 +873,47 @@ public class Diagnostics {
    private void logToFile(String messageAsString) {
 
       // If this message would make the log file too big, advance to the next file.
-     if (_availableFileSizeRemaining < messageAsString.length()) {
+     if (availableFileSizeRemaining < messageAsString.length()) {
        try {
-      	if (_emptyDataString == null) {
-            _emptyDataString = new StringBuffer();
+      	if (emptyDataString == null) {
+            emptyDataString = new StringBuffer();
          }
          else {
-         	_emptyDataString.setLength(0);
+         	emptyDataString.setLength(0);
          }
-      	if(_availableFileSizeRemaining > 0){
-            _emptyDataString.append(StringUtils.getSpaces((int)_availableFileSizeRemaining));
-            _availableFileSizeRemaining = 0;
+      	if(availableFileSizeRemaining > 0){
+            emptyDataString.append(StringUtils.getSpaces((int) availableFileSizeRemaining));
+            availableFileSizeRemaining = 0;
       	}
-        //Fill the _availableFileSizeRemaining area with blank spaces.
+        //Fill the availableFileSizeRemaining area with blank spaces.
         //This is remove any XML comments at the end of the file
         //If we have XML comments at the end, the next cycle of
         //overwriting the file would have errors in placing the XML comment tags.
-      	if(_fileOverwrite && (_file.length() <= _existingFileLength)){
-      		_file.seek(_file.getFilePointer()-START_COMMENT_DATA.length());
-      		_file.writeBytes(_emptyDataString.toString());
+      	if(fileOverwrite && (file.length() <= existingFileLength)){
+      		file.seek(file.getFilePointer() - START_COMMENT_DATA.length());
+      		file.writeBytes(emptyDataString.toString());
       	}
       	advanceFileNumber(false/*deleteFileBeforeUsing*/);//Pass the flag as false so that it does not delete the log file.
       	//if the file size is greater than the max file size allowed,
       	//then set the file size to the correct length
-      	if(_file.length()>(_params.maxLogFileSize * (long)1000)) {
-            _file.setLength((_params.maxLogFileSize * (long)1000));
+      	if(file.length() > (params.maxLogFileSize * (long)1000)) {
+            file.setLength((params.maxLogFileSize * (long)1000));
          }
-         if(_file.length()!=0){//This will tell if the file we are writing into is an existing file or a new file.
-         		_file.seek(_file.length()-STOP_COMMENT_DATA.length());//Point to the existing "closing XML comment". We overwrite the closing XML comment because on multiple cycles, the closing XML comments should not keep adding to the file. This would be syntactically wrong.
-         		_fileOverwrite=true;//If the file we writing into is an existing file then set this flag so that we can comment the previous cycles data
-         		_file.writeBytes(STOP_COMMENT_DATA);//write the end comment XML sysntax into the log file at the end of the existing file
-         		_existingFileLength = _file.length();//get the file's(file that is being overwritten) length
-              	_file.seek(0);//Irrespective of whether the file is existing or new file set the file pointer to the begenning of the file.
-             	_availableFileSizeRemaining = _params.maxLogFileSize * (long)1000;//Since this is a new file or a existing file that will completely be overwritten, set the available size to the maximum specified.
+         if(file.length() != 0){//This will tell if the file we are writing into is an existing file or a new file.
+         		file.seek(file.length() - STOP_COMMENT_DATA.length());//Point to the existing "closing XML comment". We overwrite the closing XML comment because on multiple cycles, the closing XML comments should not keep adding to the file. This would be syntactically wrong.
+         		fileOverwrite =true;//If the file we writing into is an existing file then set this flag so that we can comment the previous cycles data
+         		file.writeBytes(STOP_COMMENT_DATA);//write the end comment XML sysntax into the log file at the end of the existing file
+         		existingFileLength = file.length();//get the file's(file that is being overwritten) length
+              	file.seek(0);//Irrespective of whether the file is existing or new file set the file pointer to the begenning of the file.
+             	availableFileSizeRemaining = params.maxLogFileSize * (long)1000;//Since this is a new file or a existing file that will completely be overwritten, set the available size to the maximum specified.
          	}
          	else {
-         		_fileOverwrite=false;
-         		_existingFileLength=0;
+         		fileOverwrite =false;
+         		existingFileLength =0;
          	}
          }
          catch(IOException ex) {
-            System.err.println ("Diagnostics: logToFile: Error proceeding to a new file " + _filePath);
+            System.err.println("Diagnostics: logToFile: Error proceeding to a new file " + filePath);
             System.out.println (ex.getMessage());
          }
       }
@@ -922,80 +922,80 @@ public class Diagnostics {
         // setFilePath(_filePath, false);
 
       synchronized (this) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockThis)) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockThis)) {
 
             try {
                // Write all the data as a single String, so that if anyone tries to
                // access the file while we are writting it, they will always see a
                // valid XML file.
-               if (_completeDataString == null) {
-                  _completeDataString = new StringBuffer();
+               if (completeDataString == null) {
+                  completeDataString = new StringBuffer();
                }
                else {
-                  _completeDataString.setLength(0);
+                  completeDataString.setLength(0);
                }
-               if (_file.length() == 0) {
-                  _completeDataString.append(FILE_HEADER); // write the file header to this new file.
+               if (file.length() == 0) {
+                  completeDataString.append(FILE_HEADER); // write the file header to this new file.
                }
-               else if (_availableFileSizeRemaining == (_params.maxLogFileSize * (long)1000)){
+               else if (availableFileSizeRemaining == (params.maxLogFileSize * (long)1000)){
                    // Set the write position so that we over-write the
                    // entire existing file with the newest message except for the header part.
                    // Later we will re-write the footer at the new EOF.
-               	_file.seek(FILE_HEADER.length());//
-               	_availableFileSizeRemaining -= FILE_HEADER.length();
+               	file.seek(FILE_HEADER.length());//
+               	availableFileSizeRemaining -= FILE_HEADER.length();
                }
                else {
                   // Set the write position so that we over-write the
                   // existing file footer with the newest message.
                   // Later we will re-write the footer at the new EOF.
-                  //_file.seek(_file.length() - _fileFooter.length());
-               	_file.seek((_params.maxLogFileSize * (long)1000)-_availableFileSizeRemaining);
+                  //file.seek(_file.length() - fileFooter.length());
+               	file.seek((params.maxLogFileSize * (long)1000) - availableFileSizeRemaining);
                }
 
-               _completeDataString.append(messageAsString); // the message itself.
-               _completeDataString.append(lineSeparator);   // write a CR-LF as defined for this system.
+               completeDataString.append(messageAsString); // the message itself.
+               completeDataString.append(lineSeparator);   // write a CR-LF as defined for this system.
                // update the remaining file size.
-               _availableFileSizeRemaining -= _completeDataString.length();
-               _completeDataString.append(FILE_FOOTER);     // re-write the file footer
+               availableFileSizeRemaining -= completeDataString.length();
+               completeDataString.append(FILE_FOOTER);     // re-write the file footer
 
                //Comment the lines from the previous cycle if
                //the file we are writing is an existing file that is being over written.
-               if (_fileOverwrite) {
+               if (fileOverwrite) {
                	//This check is important because if the current file length is greater than
                	//the file that was originally chosen to be overwritten,
                	//that means that the end comment data is gone(already has been overwritten).
                	//So in this case we should not add the starting comment line.
                	//To see what can happen, comment th below check(if condition) and increase the
                	//max log file size in the servicesserver.properties
-               	if((((_params.maxLogFileSize * (long)1000)-_availableFileSizeRemaining)+FILE_FOOTER.length())<_existingFileLength) {
-                     if((((_params.maxLogFileSize * (long)1000)-_availableFileSizeRemaining)+FILE_FOOTER.length()+START_COMMENT_DATA.length())<(_existingFileLength-STOP_COMMENT_DATA.length())) {
-                        _completeDataString.append(START_COMMENT_DATA);
+               	if((((params.maxLogFileSize * (long)1000) - availableFileSizeRemaining) + FILE_FOOTER.length()) < existingFileLength) {
+                     if((((params.maxLogFileSize * (long)1000) - availableFileSizeRemaining) + FILE_FOOTER.length() + START_COMMENT_DATA.length()) < (existingFileLength - STOP_COMMENT_DATA.length())) {
+                        completeDataString.append(START_COMMENT_DATA);
                      }
-                     else if((((_params.maxLogFileSize * (long)1000)-_availableFileSizeRemaining)+FILE_FOOTER.length()+START_COMMENT_DATA.length())>(_existingFileLength-STOP_COMMENT_DATA.length())) {
-                        _completeDataString.append("   ");//add empty spaces to fill up the space.
+                     else if((((params.maxLogFileSize * (long)1000) - availableFileSizeRemaining) + FILE_FOOTER.length() + START_COMMENT_DATA.length()) > (existingFileLength - STOP_COMMENT_DATA.length())) {
+                        completeDataString.append("   ");//add empty spaces to fill up the space.
                      }
                      else {
-                        _completeDataString.append(START_COMMENT_DATA).append(STOP_COMMENT_DATA);
+                        completeDataString.append(START_COMMENT_DATA).append(STOP_COMMENT_DATA);
                      }
                   }
                }
                // Append log messages to log file, with a CR-LF and the re-positioned footer
-               _file.writeBytes(_completeDataString.toString());    // print message
+               file.writeBytes(completeDataString.toString());    // print message
             }
             catch(IOException ex) {
-               System.err.println ("Diagnostics: logToFile: Error writing to file " + _filePath);
+               System.err.println("Diagnostics: logToFile: Error writing to file " + filePath);
                System.out.println (ex.getMessage());
             }
 
-            if (!_fastDiag)
+            if (!fastDiag)
             {
-               RandomAccessFile raf = _file;
-               _file = null;
+               RandomAccessFile raf = file;
+               file = null;
                try {
                   raf.close();
                }
                catch (IOException ex) {
-                  System.err.println ("Diagnostics: logToFile: Error closing file " + _filePath);
+                  System.err.println("Diagnostics: logToFile: Error closing file " + filePath);
                   System.out.println (ex.getMessage());
                }
             }
@@ -1015,11 +1015,11 @@ public class Diagnostics {
    }
 
    /**
-    * Initializes private variables to their appropriate values, _fileNumber
-    * and _messageNumber.
+    * Initializes private variables to their appropriate values, fileNumber
+    * and messageNumber.
     */
    private void initLog(boolean startNewFile) {
-      File dir = new File(_params.logFileDir);
+      File dir = new File(params.logFileDir);
 
       // if directory NOT exist, create new directory
       if (!dir.isDirectory()) {
@@ -1027,7 +1027,7 @@ public class Diagnostics {
       }
 
       // Search for most recent logFile
-      _fileNumber           = 1;
+      fileNumber = 1;
       String  fileName;
       File    bestFileSoFar = null;
       boolean fileExists    = true;
@@ -1035,11 +1035,11 @@ public class Diagnostics {
 
       File tempFile;
       // As soon as we find a file that doesn't exist, use it
-      for (int i = 1; ((i <= _params.maxLogFiles) && fileExists); i++) {
+      for (int i = 1; ((i <= params.maxLogFiles) && fileExists); i++) {
          fileExists = false;
-         fileName = getLogFile(_params.logFileBase, i);
+         fileName = getLogFile(params.logFileBase, i);
 
-         tempFile = new File(_params.logFileDir, fileName);
+         tempFile = new File(params.logFileDir, fileName);
          try {
             fileExists = tempFile.exists();
          }
@@ -1057,11 +1057,11 @@ public class Diagnostics {
 
          if (useThisFile) {
             bestFileSoFar = tempFile;
-            _fileNumber = i;
+            fileNumber = i;
          }
       }
 
-      _messageNumber = 1;  // set message to first message
+      messageNumber = 1;  // set message to first message
 
       // If the file exists, advance to the next file,
       // which should be the oldest file.
@@ -1076,13 +1076,13 @@ public class Diagnostics {
 
    /**
     * Updates the file handle to point to the next file. The log file length
-    * has to be less than equal to _params.maxLogFiles (in KBs) and the filename
-    * is within _params.logFileBase1 to _params.logFileBase{maxLogFiles}  (inclusive).
+    * has to be less than equal to params.maxLogFiles (in KBs) and the filename
+    * is within params.logFileBase1 to params.logFileBase{maxLogFiles}  (inclusive).
     */
    private void advanceFileNumber(boolean deleteFileBeforeUsing) {
       // Start logging to the next log file
-      _fileNumber                 = (_fileNumber % _params.maxLogFiles) + 1;
-      String newFilePath = _params.logFileDir + "/" + getLogFile(_params.logFileBase, _fileNumber);
+      fileNumber = (fileNumber % params.maxLogFiles) + 1;
+      String newFilePath = params.logFileDir + "/" + getLogFile(params.logFileBase, fileNumber);
 
       setFilePath(newFilePath, deleteFileBeforeUsing);
    }
@@ -1123,26 +1123,26 @@ public class Diagnostics {
       }
 
       try {
-         if (_file != null)
+         if (this.file != null)
          {
-            _file.close();
-            _file = null;
+            this.file.close();
+            this.file = null;
          }
       }
       catch (IOException ex) {
-         System.err.println ("Diagnostics: setFilePath: Error closing " + _filePath);
+         System.err.println("Diagnostics: setFilePath: Error closing " + filePath);
          System.out.println (ex.getMessage());
       }
 
       synchronized (this) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockThis)) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockThis)) {
 
-            _filePath  = newPathName;
-            _file = raf;
+            filePath = newPathName;
+            this.file = raf;
             // Compute how much data we can write to it before we call it full.
-            _availableFileSizeRemaining = _params.maxLogFileSize * (long)1000;
+            availableFileSizeRemaining = params.maxLogFileSize * (long)1000;
             // subtract the length of the file.
-            _availableFileSizeRemaining -= fileLength;
+            availableFileSizeRemaining -= fileLength;
          }
       }
 
@@ -1157,24 +1157,24 @@ public class Diagnostics {
     */
    private static String formatMessageForFile(String msgNumber, DiagMsg msg) {
 
-      if (msg._exception != null) {
-         Object[] formatArgs = { msgNumber,                              // {0}
-                                 msg._timeStamp,                         // {1}
-                                 msg._type,                              // {2}
-                                 msg._threadName,                        // {3}
-                                 msg._message,                           // {4}
-                                 msg._associations,                      // {5}
-                                 msg._exception,                         // {6}
-                                 StringUtils.getCallStack(msg._exception)// {7}
+      if (msg.exception != null) {
+         Object[] formatArgs = {msgNumber,                              // {0}
+                                msg.timeStamp,                         // {1}
+                                msg.type,                              // {2}
+                                msg.threadName,                        // {3}
+                                msg.message,                           // {4}
+                                msg.associations,                      // {5}
+                                msg.exception,                         // {6}
+                                StringUtils.getCallStack(msg.exception)// {7}
                                };
          return MSG_FORMAT_EXCEPTIONAL.format(formatArgs);
       }
-      Object[] formatArgs = { msgNumber,                              // {0}
-                              msg._timeStamp,                         // {1}
-                              msg._type,                              // {2}
-                              msg._threadName,                        // {3}
-                              msg._message,                           // {4}
-                              msg._associations                       // {5}
+      Object[] formatArgs = {msgNumber,                              // {0}
+                             msg.timeStamp,                         // {1}
+                             msg.type,                              // {2}
+                             msg.threadName,                        // {3}
+                             msg.message,                           // {4}
+                             msg.associations                       // {5}
                             };
       return MSG_FORMAT_NORMAL.format(formatArgs);
    }
@@ -1193,9 +1193,9 @@ public class Diagnostics {
       //  ---------------
       //  43 characters (max)
       StringBuilder messageBuffer = new StringBuilder(50);
-      messageBuffer.append(message._type).append(' ');
-      messageBuffer.append(message._timeStamp).append(' ');
-      messageBuffer.append(message._threadName);
+      messageBuffer.append(message.type).append(' ');
+      messageBuffer.append(message.timeStamp).append(' ');
+      messageBuffer.append(message.threadName);
       int blankSpacesNeeded = 50 - messageBuffer.length();
       if (blankSpacesNeeded > 0) {
          messageBuffer.append(StringUtils.getSpaces(blankSpacesNeeded));
@@ -1203,7 +1203,7 @@ public class Diagnostics {
       else {
          messageBuffer.append(' ');
       }
-      messageBuffer.append(message._message);
+      messageBuffer.append(message.message);
       return messageBuffer.toString();
    }
 
@@ -1212,40 +1212,40 @@ public class Diagnostics {
     * @return current message number
     */
    private String getMessageNumber() {
-      return DEC_FORMAT.format(_messageNumber++);
+      return DEC_FORMAT.format(messageNumber++);
    }
 
 
    void displayMessage(DiagMsg message)
    {
       if (message != null) {
-         if (message._type == TYPE_SYSTEM_OUT) {   // System Out
-            System.out.print(message._message);
+         if (message.type == TYPE_SYSTEM_OUT) {   // System Out
+            System.out.print(message.message);
          }
          else {   // Formatted Message
             String msgNumber = getMessageNumber();
             String messageAsString;
-            boolean mandatory = ((message._type != TYPE_INFO_STRING) &&
-                                 (message._type != TYPE_OPERATIONS)  &&
-                                 (message._type != TYPE_STATISTICAL) &&
-                                 (message._type != TYPE_MONITORS));
-            if ( mandatory || _logInfoToConsole) {
+            boolean mandatory = ((message.type != TYPE_INFO_STRING) &&
+                                 (message.type != TYPE_OPERATIONS) &&
+                                 (message.type != TYPE_STATISTICAL) &&
+                                 (message.type != TYPE_MONITORS));
+            if (mandatory || logInfoToConsole) {
                messageAsString = formatMessageForConsole(message);
                System.out.println(messageAsString);
-               if (message._exception != null) {
-                  message._exception.printStackTrace();
+               if (message.exception != null) {
+                  message.exception.printStackTrace();
                }
             }
-            if ( mandatory || _logInfoToFile) {
+            if (mandatory || logInfoToFile) {
                messageAsString = formatMessageForFile(msgNumber, message);
                logToFile(messageAsString);
                // Check to see if this is a message that should be written
                // to the Debug File (currently this is Execptions.log file.)
-               if (message._type == TYPE_DEBUG_TRAP) {
+               if (message.type == TYPE_DEBUG_TRAP) {
                   Vector<String> errors = new Vector<>();
-                  errors.add(message._timeStamp);
+                  errors.add(message.timeStamp);
                   //errors.add(StringUtils.getTimeStamp(true/*includeMilliseconds*/));
-                  writeStringsToExceptionsFile(errors, message._message, message._threadName);
+                  writeStringsToExceptionsFile(errors, message.message, message.threadName);
                }
             }
          }
@@ -1255,7 +1255,7 @@ public class Diagnostics {
    void writeStringsToExceptionsFile(Vector<String> messageLines, String message, String threadName)
    {
       // create the file, if it doesn't already exist
-      File file = new File(_params.logFileDir, "Exceptions.log");
+      File file = new File(params.logFileDir, "Exceptions.log");
 
       // This String is used in case we have a IOExecption, it will tell us
       // what operation was being processed (open, write, or close)
@@ -1293,7 +1293,7 @@ public class Diagnostics {
     *
     */
    private class IOThread extends TrackableThread {
-      int _pauseTimer;
+      int pauseTimer;
       /**
        * Creates an instance of this class.
        * @param name  assigns a name to this thread
@@ -1310,14 +1310,14 @@ public class Diagnostics {
       @Override
       public void run() {
          DiagMsg message;
-         _pauseTimer = 0;
-         while(!_endDiags || (_queue.getSize() > 0)) {
+         pauseTimer = 0;
+         while(!endDiags || (queue.getSize() > 0)) {
             // Retrieve message from queue.
-            message = _queue.getMessage();
-            while (_pauseTimer != 0) {
+            message = queue.getMessage();
+            while (pauseTimer != 0) {
                try {
-                  sleep(_pauseTimer);
-                  _pauseTimer = 0;
+                  sleep(pauseTimer);
+                  pauseTimer = 0;
                }
                catch (InterruptedException ex) {
                   // If we are interrupted, our pause timer
@@ -1335,20 +1335,19 @@ public class Diagnostics {
     *
     */
    private class MessageQueue {
-      private final Vector<DiagMsg> _messages;
-      private boolean _stop = false;
-      private final int _messageQueueMaxSize;
-
-      final Semaphore _lockMessageQueue;
+      private final Vector<DiagMsg> messages;
+      private       boolean         stop = false;
+      private final int             messageQueueMaxSize;
+      final         Semaphore       lockMessageQueue;
       /**
        * Creates an instance of this class.
        * Default constructor.
        */
       public MessageQueue(int messageQueueMaxSize) {
-         _messages = new Vector<>();
-         _messageQueueMaxSize = messageQueueMaxSize;
-         _stop = false;
-         _lockMessageQueue = new Semaphore("Diagnostics.MessageQueue", Semaphore.CLASS_MESSAGEQUEUE);
+         messages = new Vector<>();
+         this.messageQueueMaxSize = messageQueueMaxSize;
+         stop = false;
+         lockMessageQueue = new Semaphore("Diagnostics.MessageQueue", Semaphore.CLASS_MESSAGEQUEUE);
       }
 
       /**
@@ -1357,9 +1356,9 @@ public class Diagnostics {
       public void closeQueue() {
          // notify & wait operation must occur within synchronized blocks
          synchronized (this) {
-            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockMessageQueue)) {
+            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockMessageQueue)) {
 
-               _stop = true;
+               stop = true;
                notifyAll();
 
             }
@@ -1371,7 +1370,7 @@ public class Diagnostics {
        * @return current queue size
        */
       public int getSize() {
-         return _messages.size();
+         return messages.size();
       }
 
       /**
@@ -1382,33 +1381,33 @@ public class Diagnostics {
          boolean messageAdded = false;
          // notify & wait operation must occur within synchronized blocks
          synchronized (this) {
-            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockMessageQueue)) {
+            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockMessageQueue)) {
 
                // Don't accept new messages if the queue has been stopped
-               if (!_stop) {
+               if (!stop) {
                   // if there are too many entries waiting to be processed,
                   // stop accepting new diags.
-                  if ((_messageQueueMaxSize > 0) && (_messages.size() > _messageQueueMaxSize)) {
+                  if ((messageQueueMaxSize > 0) && (messages.size() > messageQueueMaxSize)) {
                      closeQueue();
                      // Send out a message to all OhMyGod admins.
-                     String errorMessage = "Message queue threshold of " + _messageQueueMaxSize +
+                     String errorMessage = "Message queue threshold of " + messageQueueMaxSize +
                                            " exceeded! Diagnostic logging has been turned off." +
                                            " Try typing \"resynch properties,diag\" on the command line to restart it." +
                                            " If that doesn't help, then the server should be re-started to restore logging.";
 
                      // Since we are about the throw away the current message, and we need to
                      // create a new one to log this error, just cannibalize the current one.
-                     msg._type = TYPE_SEVERE_ERROR;
-                     msg._message = errorMessage;
+                     msg.type = TYPE_SEVERE_ERROR;
+                     msg.message = errorMessage;
 
                      // Alter the first diag message, so we can see what was going on -
                      // assuming this diag makes it to the log file!
-                     DiagMsg firstMsg = _messages.firstElement();
-                     firstMsg._message = "first Message in queue when threshold of " + _messageQueueMaxSize +
-                                         " exceeded ; " + firstMsg._type + " : " + firstMsg._message;
-                     firstMsg._type = TYPE_SEVERE_ERROR;
+                     DiagMsg firstMsg = messages.firstElement();
+                     firstMsg.message = "first Message in queue when threshold of " + messageQueueMaxSize +
+                                        " exceeded ; " + firstMsg.type + " : " + firstMsg.message;
+                     firstMsg.type = TYPE_SEVERE_ERROR;
                   }
-                  _messages.addElement(msg);
+                  messages.addElement(msg);
                   messageAdded = true;
                   notify();
                }
@@ -1426,10 +1425,10 @@ public class Diagnostics {
          DiagMsg msg = null;
          // notify & wait operation must occur within synchronized blocks
          synchronized (this) {
-            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lockMessageQueue)) {
+            try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lockMessageQueue)) {
 
-               while (_messages.isEmpty() && !_stop) {
-                  try (SemaphoreAutoUntracker sau = new SemaphoreAutoUntracker(_lockMessageQueue)) {
+               while (messages.isEmpty() && !stop) {
+                  try (SemaphoreAutoUntracker sau = new SemaphoreAutoUntracker(lockMessageQueue)) {
                      wait();
                   }
                   catch (InterruptedException ex) {
@@ -1437,8 +1436,8 @@ public class Diagnostics {
                   }
                }
 
-               if (!_messages.isEmpty()) {
-                  msg = _messages.remove(0);
+               if (!messages.isEmpty()) {
+                  msg = messages.remove(0);
                }
             }
          }

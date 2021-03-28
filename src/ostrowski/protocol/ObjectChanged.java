@@ -11,23 +11,23 @@ import java.io.IOException;
 
 public class ObjectChanged extends SerializableObject
 {
-   SerializableObject _originalObject;
-   SerializableObject _modifiedObject;
+   SerializableObject originalObject;
+   SerializableObject modifiedObject;
 
    public ObjectChanged() {
    }
 
    public ObjectChanged(SerializableObject origObj, SerializableObject modObj) {
-      _originalObject = origObj;
-      _modifiedObject = modObj;
+      originalObject = origObj;
+      modifiedObject = modObj;
    }
 
    @Override
    public void serializeFromStream(DataInputStream in)
    {
       try {
-         _originalObject = SerializableFactory.readObject(readString(in), in);
-         _modifiedObject = SerializableFactory.readObject(readString(in), in);
+         originalObject = SerializableFactory.readObject(readString(in), in);
+         modifiedObject = SerializableFactory.readObject(readString(in), in);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -37,26 +37,26 @@ public class ObjectChanged extends SerializableObject
    public void serializeToStream(DataOutputStream out)
    {
       try {
-         writeToStream(SerializableFactory.getKey(_originalObject), out);
-         _originalObject.serializeToStream(out);
-         writeToStream(SerializableFactory.getKey(_modifiedObject), out);
-         _modifiedObject.serializeToStream(out);
+         writeToStream(SerializableFactory.getKey(originalObject), out);
+         originalObject.serializeToStream(out);
+         writeToStream(SerializableFactory.getKey(modifiedObject), out);
+         modifiedObject.serializeToStream(out);
       } catch (IOException e) {
          e.printStackTrace();
       }
    }
 
    public SerializableObject getOriginalObj() {
-      return _originalObject;
+      return originalObject;
    }
 
    public SerializableObject getModifiedObj() {
-      return _modifiedObject;
+      return modifiedObject;
    }
 
    @Override
    public String toString() {
-      return "ObjectChanged. originalObject = '" + _originalObject +
-             "'\n modifiedObject = '" + _modifiedObject + "'";
+      return "ObjectChanged. originalObject = '" + originalObject +
+             "'\n modifiedObject = '" + modifiedObject + "'";
    }
 }

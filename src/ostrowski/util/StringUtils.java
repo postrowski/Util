@@ -20,16 +20,16 @@ public class StringUtils {
    //       so it is much more efficient.
    // Basically, it is never safe to alter the order of this list, because an entry in the database may have
    // been created with the old order, and thus would not match the same list built using the new order.
-   static private final String _delimiters = "^|~`!@#$%&*()_+/<>?;:,.-=[]\"'{}¤¶§" +
-                                             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
-                                             "•¦ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥ƒáíóúñÑªº¿¬½¼¡«»¯ßµ±÷˜°·² ";
+   static private final String DELIMITERS = "^|~`!@#$%&*()_+/<>?;:,.-=[]\"'{}¤¶§" +
+                                            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890" +
+                                            "•¦ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥ƒáíóúñÑªº¿¬½¼¡«»¯ßµ±÷˜°·² ";
    static public char findDelimiter(Vector<String> stringList) {
       boolean found;
       String testcase;
       char testDelimiter;
-      for (int indexI = 0 ; indexI < _delimiters.length(); indexI++) {
+      for (int indexI = 0; indexI < DELIMITERS.length(); indexI++) {
          found = false;
-         testDelimiter = _delimiters.charAt(indexI);
+         testDelimiter = DELIMITERS.charAt(indexI);
          for (int indexJ = 0; indexJ < stringList.size(); indexJ++)
          {
             testcase = stringList.elementAt(indexJ);
@@ -41,7 +41,7 @@ public class StringUtils {
             }
          }
          if (!found) {
-            return _delimiters.charAt(indexI);
+            return DELIMITERS.charAt(indexI);
          }
       }
 
@@ -181,7 +181,7 @@ public class StringUtils {
     * are initialized, and they have their timezones set to GMT. It should be called any
     * time we are about to use a date formatter, and we find that either one is null. It
     * should probably not be called every time before we use a date formatter, because the
-    * synchronized access on _universalTimeZone might be expensive.
+    * synchronized access on universalTimeZone might be expensive.
     * Instead, call it like this:
     *       if (_dateFormater == null) {
     *          ensureDateFormaterIsValid();
@@ -189,7 +189,7 @@ public class StringUtils {
     */
    private static void ensureDateFormaterIsValid() {
       // Make sure that only one thread can be here at a time by synchronizing
-      // on a static object. The choice of synchronizing on the _universalTimeZone
+      // on a static object. The choice of synchronizing on the universalTimeZone
       // was arbitrary. It could be any static, initialized, object.
       synchronized(UNIVERSAL_TIMEZONE) {
          if (DATE_FORMATTER == null) {

@@ -16,8 +16,7 @@ public interface IMonitoringObject
 //                                      Vector<IMonitoringObject> skipList,
 //                                      Diagnostics diag);
 //   public Vector<IMonitorableObject> getSnapShotOfWatchedObjects();
-String getObjectIDString();
-
+   String getObjectIDString();
 
    MonitoringObject  _monitoringObj = new MonitoringObject("");
 

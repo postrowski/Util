@@ -14,12 +14,12 @@ public interface ISynchronizedRequest
 //   {
 //      if (response instanceof SyncRequest) {
 //         SyncRequest respAction = (SyncRequest) response;
-//         _answerID = respAction._answerID;
-//         _answerStr = respAction._answerStr;
+//         answerID = respAction.answerID;
+//         answerStr = respAction.answerStr;
 //      }
 //      // Notify any thread waiting for this response.
 //      synchronized (this) {
-//         this._lockThis.lock();
+//         this.lockThis.lock();
 //         try {
 //            notifyAll();
 //         }

@@ -14,36 +14,36 @@ import ostrowski.util.sockets.ISynchronizedResponse;
 
 public class Response extends SerializableObject implements ISynchronizedResponse
 {
-   private int _synchID      = -1;
-   private int _answerID     = -1;
-   private String _answerStr = "";
+   private int    synchID    = -1;
+   private int    answerID  = -1;
+   private String answerStr = "";
 
    public Response() {}
 
    public Response(ISynchronizedRequest request) {
-      _synchID = request.getSyncKey();
+      synchID = request.getSyncKey();
       if (request instanceof SyncRequest) {
          SyncRequest syncReq = (SyncRequest) request;
-         _answerID  = syncReq.getFullAnswerID();
-         _answerStr = syncReq.getAnswer();
+         answerID = syncReq.getFullAnswerID();
+         answerStr = syncReq.getAnswer();
       }
    }
 
    public void setAnswerKey(Integer answer) {
-      _answerID = answer;
+      answerID = answer;
    }
 
    public void setAnswerStr(String answer) {
-      _answerStr =  answer;
+      answerStr =  answer;
    }
 
    @Override
    public void serializeFromStream(DataInputStream in)
    {
       try {
-         _synchID = readInt(in);
-         _answerID = readInt(in);
-         _answerStr = readString(in);
+         synchID = readInt(in);
+         answerID = readInt(in);
+         answerStr = readString(in);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -53,9 +53,9 @@ public class Response extends SerializableObject implements ISynchronizedRespons
    public void serializeToStream(DataOutputStream out)
    {
       try {
-         writeToStream(_synchID, out);
-         writeToStream(_answerID, out);
-         writeToStream(_answerStr, out);
+         writeToStream(synchID, out);
+         writeToStream(answerID, out);
+         writeToStream(answerStr, out);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -64,24 +64,24 @@ public class Response extends SerializableObject implements ISynchronizedRespons
    //@Override from ISynchronizedResponse
    @Override
    public int getSyncKey() {
-      return _synchID;
+      return synchID;
    }
 
    public int getFullAnswerID() {
-      return _answerID;
+      return answerID;
    }
 
    public void setFullAnswerID(int answerID) {
-      _answerID = answerID;
+      this.answerID = answerID;
    }
 
    public String getAnswerStr() {
-      return _answerStr;
+      return answerStr;
    }
 
    @Override
    public String toString() {
-      return "Response: SynchKey=" + _synchID+ ", answerID="+_answerID + ", answerStr="+_answerStr;
+      return "Response: SynchKey=" + synchID + ", answerID=" + answerID + ", answerStr=" + answerStr;
    }
 
 }

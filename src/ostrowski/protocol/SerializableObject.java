@@ -10,7 +10,7 @@ import ostrowski.DebugBreak;
 
 public abstract class SerializableObject implements Cloneable
 {
-   static final String  _charEncoding          = "ISO-8859-1"; // "ISO Latin Alphabet No. 1, a.k.a. ISO-LATIN-1";
+   static final String charEncoding = "ISO-8859-1"; // "ISO Latin Alphabet No. 1, a.k.a. ISO-LATIN-1";
 
    public abstract void serializeToStream(DataOutputStream out);
 
@@ -66,7 +66,7 @@ public abstract class SerializableObject implements Cloneable
       if ((data == null) || (data.length() == 0)) {
          out.writeShort(0);
       } else {
-         byte[] strout = data.getBytes(_charEncoding);
+         byte[] strout = data.getBytes(charEncoding);
          out.writeShort(strout.length);
          out.write(strout);
       }
@@ -82,7 +82,7 @@ public abstract class SerializableObject implements Cloneable
       }
       byte[] buf = new byte[strlen];
       in.read(buf);
-      return new String(buf, _charEncoding);
+      return new String(buf, charEncoding);
    }
    // primitive serialization
 

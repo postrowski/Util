@@ -5,42 +5,42 @@ import java.util.List;
 
 public class AnglesList
 {
-   final List<AnglePair> _list = new ArrayList<>();
+   final List<AnglePair> list = new ArrayList<>();
    public AnglesList() {
    }
 
    public void add(AnglePair newAnglePairIn) {
       AnglePair newAnglePair = newAnglePairIn;
       // Look through the current collection to see if we can combine this new angle with any existing angles
-      for (int i=0 ; i<_list.size() ; i++) {
-         AnglePair pairI = _list.get(i);
+      for (int i = 0; i < list.size() ; i++) {
+         AnglePair pairI = list.get(i);
          AnglePair union = newAnglePair.unionWithIfOverlapping(pairI, 0.01/*tolerance*/);
          if (union != null) {
             // if this had an overlap with the entry from the list,
             // so we no longer need pairI in this list.
-            _list.remove(i);
+            list.remove(i);
             newAnglePair = union;
             --i;
          }
       }
-      for (int i=0 ; i<_list.size() ; i++) {
-         AnglePair pairI = _list.get(i);
-         if (pairI._startAngle > newAnglePair._startAngle) {
-            _list.add(i, newAnglePair);
+      for (int i = 0; i < list.size() ; i++) {
+         AnglePair pairI = list.get(i);
+         if (pairI.startAngle > newAnglePair.startAngle) {
+            list.add(i, newAnglePair);
             return;
          }
       }
-      _list.add(newAnglePair);
+      list.add(newAnglePair);
    }
 
    public void add(AnglesList otherList) {
-      for (AnglePair otherPair : otherList._list) {
+      for (AnglePair otherPair : otherList.list) {
          add(otherPair);
       }
    }
 
    public boolean overlapsWithAny(AnglePair anglePair) {
-      for (AnglePair angle : _list) {
+      for (AnglePair angle : list) {
          if (angle.overlapsWith(angle)) {
             return true;
          }
@@ -49,7 +49,7 @@ public class AnglesList
    }
 
    public boolean containsCompletely(AnglePair anglePair) {
-      for (AnglePair angle : _list) {
+      for (AnglePair angle : list) {
          if (angle.containsCompletely(anglePair)) {
             return true;
          }
@@ -59,6 +59,6 @@ public class AnglesList
 
    @Override
    public String toString() {
-      return _list.toString();
+      return list.toString();
    }
 }

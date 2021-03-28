@@ -11,19 +11,19 @@ import java.io.IOException;
 
 public class ClientID extends SerializableObject
 {
-   private int _id = -1;
+   private int id = -1;
 
    public ClientID() {}
 
-   public ClientID(int id) { _id = id;}
+   public ClientID(int id) { this.id = id;}
 
-   public int getID() { return _id;}
+   public int getID() { return id;}
 
    @Override
    public void serializeToStream(DataOutputStream out)
    {
       try {
-         out.writeInt(_id);
+         out.writeInt(id);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -33,7 +33,7 @@ public class ClientID extends SerializableObject
    public void serializeFromStream(DataInputStream in)
    {
       try {
-         _id = in.readInt();
+         id = in.readInt();
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -42,7 +42,7 @@ public class ClientID extends SerializableObject
    @Override
    public String toString()
    {
-      return "ClientID: " + _id;
+      return "ClientID: " + id;
    }
 
 }

@@ -24,19 +24,19 @@ import ostrowski.util.sockets.ISynchronizedResponse;
 
 public abstract class SyncRequest extends SerializableObject implements ISynchronizedRequest, ISynchronizedResponse
 {
-   protected static int           _nextMessageKey   = 1;
-   protected int                  _syncKey          = _nextMessageKey++;
-   protected String               _message          = "";
-   protected IRequestOption       _answer           = null;
-   protected List<IRequestOption> _options          = new ArrayList<>();
-   protected int                  _defaultID        = -1;
-   protected List<SyncRequest>    _resultsQueue     = null;
-   protected boolean              _backupSelected   = false;
+   protected static int                  nextMessageKey = 1;
+   protected        int                  syncKey        = nextMessageKey++;
+   protected        String               message        = "";
+   protected        IRequestOption       answer         = null;
+   protected        List<IRequestOption> options        = new ArrayList<>();
+   protected        int                  defaultID      = -1;
+   protected        List<SyncRequest>    resultsQueue   = null;
+   protected        boolean              backupSelected = false;
 
-   public final Semaphore _lockThis = new Semaphore("SyncRequest", Semaphore.CLASS_SYNCHREQUEST);
+   public final Semaphore lockThis = new Semaphore("SyncRequest", Semaphore.CLASS_SYNCHREQUEST);
 
-   public static final int OPT_CANCEL_ACTION  = -2;
-   public static final int ACTION_NONE  = 0;
+   public static final int OPT_CANCEL_ACTION = -2;
+   public static final int ACTION_NONE       = 0;
 
    public SyncRequest() {
        init();
@@ -50,20 +50,20 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
       return getEnabledCount(true) != 1;
    }
 
-   public boolean isCancel() {  return (_answer != null) && (_answer.getIntValue() == OPT_CANCEL_ACTION); }
+   public boolean isCancel() {  return (answer != null) && (answer.getIntValue() == OPT_CANCEL_ACTION); }
 
-   public void setResultsQueue(List<SyncRequest> resultsQueue) { _resultsQueue = resultsQueue;}
-   public List<SyncRequest> getResultsQueue() { return _resultsQueue;}
-   public void setSyncKey(int messageKey)    { _syncKey = messageKey; }
+   public void setResultsQueue(List<SyncRequest> resultsQueue) { this.resultsQueue = resultsQueue;}
+   public List<SyncRequest> getResultsQueue() { return resultsQueue;}
+   public void setSyncKey(int messageKey)    { syncKey = messageKey; }
    //@Override from ISynchronizedRequest
    @Override
-   public int  getSyncKey()                  { return _syncKey; }
-   public String getMessage()                { return _message; }
-   public void setMessage(String message)    { _message = message; }
+   public int  getSyncKey()                  { return syncKey; }
+   public String getMessage()                { return message; }
+   public void setMessage(String message)    { this.message = message; }
    public void addOption(IRequestOption option) {
       // never add two options with the same ID (unless it is disabled, as is the case for the \n entries)
       if (option.getIntValue() != -1) {
-         for (IRequestOption opt : _options) {
+         for (IRequestOption opt : options) {
             if (opt.getIntValue() == option.getIntValue()) {
                if (opt.getIntValue() != OPT_CANCEL_ACTION) {
                   DebugBreak.debugBreak("Duplicate option added to SyncRequest.");
@@ -72,7 +72,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
             }
          }
       }
-      _options.add(option);
+      options.add(option);
       if (option.getIntValue() != -1) {
          String allowedKeyStrokes = getAllowedKeyStrokesForOption(option.getIntValue());
          if (allowedKeyStrokes != null) {
@@ -89,27 +89,27 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    }
 
    public synchronized void setAnswerByOptionIndex(int i) {
-      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(_lockThis)) {
-         _answer = _options.get(i);
+      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(lockThis)) {
+         answer = options.get(i);
       }
    }
    public synchronized void setCustAnswer(String answer)  {
-      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(_lockThis)) {
-         _answer = new RequestOption(answer, -1, true);
+      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(lockThis)) {
+         this.answer = new RequestOption(answer, -1, true);
       }
    }
    public synchronized boolean setAnswerID(int answerID )    {
-      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(_lockThis)) {
-         for (IRequestOption reqOpt : _options) {
+      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(lockThis)) {
+         for (IRequestOption reqOpt : options) {
             if (reqOpt.getIntValue() == answerID) {
                if (reqOpt.isEnabled()) {
-                  _answer = reqOpt;
+                  answer = reqOpt;
                   return true;
                }
             }
          }
          IRequestOption singleEnabledOpt = null;
-         for (IRequestOption reqOpt : _options) {
+         for (IRequestOption reqOpt : options) {
             if (reqOpt.isEnabled()) {
                if (singleEnabledOpt != null) {
                   // more than one option is enabled!
@@ -119,7 +119,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
             }
          }
          if (singleEnabledOpt != null) {
-            _answer = singleEnabledOpt;
+            answer = singleEnabledOpt;
             return true;
          }
          return false;
@@ -129,18 +129,18 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
       setAnswerID(source.getAnswerID());
    }
    public void setDefaultOption(IRequestOption defaultOpt) {
-      _defaultID = (defaultOpt == null) ? -1 : defaultOpt.getIntValue();
+      defaultID = (defaultOpt == null) ? -1 : defaultOpt.getIntValue();
    }
    @Deprecated
-   public void setDefaultOption(int defaultID) { _defaultID = defaultID; }
-   public String getAnswer()                   { return (_answer == null) ? null : _answer.getName(); }
-   public int   getAnswerID()                  { return (_answer == null) ? -1 : _answer.getIntValue() ; }
-   public boolean isAnswered()                 { return _answer != null;}
-   public IRequestOption answer()              { return _answer;}
+   public void setDefaultOption(int defaultID) { this.defaultID = defaultID; }
+   public String getAnswer()                   { return (answer == null) ? null : answer.getName(); }
+   public int   getAnswerID()                  { return (answer == null) ? -1 : answer.getIntValue() ; }
+   public boolean isAnswered()                 { return answer != null;}
+   public IRequestOption answer()              { return answer;}
    public int   getDefaultIndex()
    {
-      for (int i=0 ; i<_options.size() ; i++) {
-         if (_defaultID == _options.get(i).getIntValue()) {
+      for (int i = 0; i < options.size() ; i++) {
+         if (defaultID == options.get(i).getIntValue()) {
             return i;
          }
       }
@@ -148,43 +148,43 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    }
    public String[] getOptions()
    {
-      String[] result = new String[_options.size()];
-      for (int i=0 ; i<_options.size() ; i++) {
-         result[i] = _options.get(i).getName();
+      String[] result = new String[options.size()];
+      for (int i = 0; i < options.size() ; i++) {
+         result[i] = options.get(i).getName();
       }
       return result;
    }
    public int[] getOptionIDs()
    {
-      int[] result = new int[_options.size()];
-      for (int i=0 ; i<_options.size() ; i++) {
-         result[i] = _options.get(i).getIntValue();
+      int[] result = new int[options.size()];
+      for (int i = 0; i < options.size() ; i++) {
+         result[i] = options.get(i).getIntValue();
       }
       return result;
    }
    public IRequestOption[] getReqOptions()
    {
-      IRequestOption[] result = new IRequestOption[_options.size()];
-      for (int i=0 ; i<_options.size() ; i++) {
-         result[i] = _options.get(i);
+      IRequestOption[] result = new IRequestOption[options.size()];
+      for (int i = 0; i < options.size() ; i++) {
+         result[i] = options.get(i);
       }
       return result;
    }
    public boolean[] getEnableds() {
-      boolean[] result = new boolean[_options.size()];
-      for (int i=0 ; i<_options.size() ; i++) {
-         result[i] = _options.get(i).isEnabled();
+      boolean[] result = new boolean[options.size()];
+      for (int i = 0; i < options.size() ; i++) {
+         result[i] = options.get(i).isEnabled();
       }
       return result;
    }
 
    public int getActionCount()
    {
-      return _options.size();
+      return options.size();
    }
    public int getEnabledCount(boolean includeCancelAction) {
       int count = 0;
-      for (IRequestOption reqOpt : _options) {
+      for (IRequestOption reqOpt : options) {
          if (reqOpt.isEnabled()) {
             if (includeCancelAction || (reqOpt.getIntValue() != OPT_CANCEL_ACTION)) {
                count++;
@@ -195,7 +195,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    }
    public String getSingleEnabledAction() {
       String name = null;
-      for (IRequestOption reqOpt : _options) {
+      for (IRequestOption reqOpt : options) {
          if (reqOpt.isEnabled()) {
             if (reqOpt.getIntValue() != OPT_CANCEL_ACTION) {
                if (name != null) {
@@ -209,7 +209,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    }
    public boolean selectSingleEnabledEntry(boolean ignoreCancel) {
       IRequestOption singleEntry = null;
-      for (IRequestOption reqOpt : _options) {
+      for (IRequestOption reqOpt : options) {
          if (reqOpt.isEnabled()) {
             if (!ignoreCancel || (reqOpt.getIntValue() != OPT_CANCEL_ACTION)) {
                if (singleEntry != null) {
@@ -228,7 +228,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
          return true;
       }
       // exactly one is enabled, select it
-      _answer = singleEntry;
+      answer = singleEntry;
       return true;
    }
 
@@ -236,14 +236,14 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    public void serializeToStream(DataOutputStream out)
    {
       try {
-         writeToStream(_syncKey, out);
-         writeToStream(_message, out);
-         writeToStream(_options, out);
-         writeToStream(_defaultID, out);
-         writeToStream((_answer instanceof SerializableObject), out);
-         if (_answer != null) {
-            writeToStream(SerializableFactory.getKey((SerializableObject)_answer), out);
-            _answer.serializeToStream(out);
+         writeToStream(syncKey, out);
+         writeToStream(message, out);
+         writeToStream(options, out);
+         writeToStream(defaultID, out);
+         writeToStream((answer instanceof SerializableObject), out);
+         if (answer != null) {
+            writeToStream(SerializableFactory.getKey((SerializableObject) answer), out);
+            answer.serializeToStream(out);
          }
       } catch (IOException e) {
          e.printStackTrace();
@@ -254,20 +254,20 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    public void serializeFromStream(DataInputStream in)
    {
       try {
-         _syncKey         = readInt(in);
-         _message         = readString(in);
-         _options         = new ArrayList<>();
+         syncKey = readInt(in);
+         message = readString(in);
+         options = new ArrayList<>();
          List<SerializableObject> options = readIntoListSerializableObject(in);
          for (SerializableObject opt : options) {
             if (opt instanceof IRequestOption) {
-               _options.add((IRequestOption)opt);
+               this.options.add((IRequestOption)opt);
             }
          }
-         _defaultID       = readInt(in);
+         defaultID = readInt(in);
          boolean hasAnswer = readBoolean(in);
-         _answer = null;
+         answer = null;
          if (hasAnswer) {
-            _answer = (IRequestOption) SerializableFactory.readObject(readString(in), in);
+            answer = (IRequestOption) SerializableFactory.readObject(readString(in), in);
          }
       } catch (IOException e) {
          e.printStackTrace();
@@ -276,37 +276,37 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
 
    public synchronized void copyDataInto(SyncRequest newObj)
    {
-      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(_lockThis)) {
+      try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(lockThis)) {
          // TODO: deep copy of options?
-         newObj._syncKey        = _syncKey;
-         newObj._message        = _message;
-         newObj._options        = new ArrayList<>();
-         newObj._options.addAll(_options);
-         newObj._defaultID      = _defaultID;
-         newObj._answer         = _answer;
+         newObj.syncKey = syncKey;
+         newObj.message = message;
+         newObj.options = new ArrayList<>();
+         newObj.options.addAll(options);
+         newObj.defaultID = defaultID;
+         newObj.answer = answer;
       }
    }
    @Override
    public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("SyncRequest: ");
-      sb.append("SyncKey: ").append(_syncKey);
+      sb.append("SyncKey: ").append(syncKey);
       sb.append(", Message: ").append(getMessage());
-      for (IRequestOption reqOpt : _options) {
+      for (IRequestOption reqOpt : options) {
          sb.append("\n   ").append((reqOpt).getIntValue());
          sb.append(": ").append(reqOpt.getName());
          if (!reqOpt.isEnabled()) {
             sb.append(" (disabled)");
          }
       }
-      sb.append("\nAnswer: ").append((_answer == null) ? "-1" : _answer.toString());
-      sb.append("\nDefault: ").append((_defaultID>=0) ? String.valueOf(_defaultID) : "-1");
+      sb.append("\nAnswer: ").append((answer == null) ? "-1" : answer.toString());
+      sb.append("\nDefault: ").append((defaultID >= 0) ? String.valueOf(defaultID) : "-1");
       sb.append("\nresultsQueue=");
-      if (_resultsQueue == null) {
+      if (resultsQueue == null) {
          sb.append("null");
       }
       else {
-         sb.append(_resultsQueue.hashCode());
+         sb.append(resultsQueue.hashCode());
       }
 
       return sb.toString();
@@ -318,15 +318,15 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    {
       if (response instanceof SyncRequest) {
          SyncRequest respAction = (SyncRequest) response;
-         _answer = new RequestOption(respAction.getAnswer(), respAction.getAnswerID(), true);
+         answer = new RequestOption(respAction.getAnswer(), respAction.getAnswerID(), true);
       }
       else if (response instanceof Response) {
          Response resp = (Response) response;
-         _answer = new RequestOption(resp.getAnswerStr(), resp.getFullAnswerID(), true);
+         answer = new RequestOption(resp.getAnswerStr(), resp.getFullAnswerID(), true);
       }
       // Notify any thread waiting for this response.
       synchronized (this) {
-         try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(this._lockThis)) {
+         try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(this.lockThis)) {
             notifyAll();
          }
       }
@@ -344,8 +344,8 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
 
    public int getAnswerIndex()
    {
-      for (int index = 0 ; index < _options.size() ; index++) {
-         if (_options.get(index).getIntValue() == getFullAnswerID()) {
+      for (int index = 0; index < options.size() ; index++) {
+         if (options.get(index).getIntValue() == getFullAnswerID()) {
             return index;
          }
       }
@@ -353,13 +353,13 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    }
 
    public boolean is_backupSelected() {
-      return _backupSelected;
+      return backupSelected;
    }
 
    public void set_backupSelected(boolean selected) {
-      _backupSelected = selected;
+      backupSelected = selected;
       if (selected) {
-         _answer = null;
+         answer = null;
       }
    }
 
@@ -369,14 +369,14 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
       if (other == null) {
          return false;
       }
-      if (!_message.equals(other._message)) {
+      if (!message.equals(other.message)) {
          return false;
       }
-      if (_options.size() != other._options.size()) {
+      if (options.size() != other.options.size()) {
          return false;
       }
-      for (int i=0 ; i<_options.size() ; i++) {
-         if (!_options.get(i).equals(other._options.get(i))) {
+      for (int i = 0; i < options.size() ; i++) {
+         if (!options.get(i).equals(other.options.get(i))) {
             return false;
          }
       }
@@ -405,14 +405,14 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
       return setAnswerID(value);
    }
 
-   public final HashMap<java.lang.Character, IRequestOption> _mapCharToOption     = new HashMap<>();
-   public final HashMap<java.lang.Character, IRequestOption> _ctrlMapCharToOption = new HashMap<>();
-   public final HashMap<java.lang.Character, IRequestOption> _altMapCharToOption  = new HashMap<>();
+   public final HashMap<java.lang.Character, IRequestOption> mapCharToOption     = new HashMap<>();
+   public final HashMap<java.lang.Character, IRequestOption> ctrlMapCharToOption = new HashMap<>();
+   public final HashMap<java.lang.Character, IRequestOption> altMapCharToOption  = new HashMap<>();
 
    public Integer getOptionIDForKeystroke(int key, int mask) {
       char charKey = (char)key;
       if (charKey == SWT.ESC) {
-         for (IRequestOption reqOpt : _options) {
+         for (IRequestOption reqOpt : options) {
             if (reqOpt.getIntValue() == OPT_CANCEL_ACTION) {
                return OPT_CANCEL_ACTION;
             }
@@ -422,17 +422,17 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
          charKey = Character.toUpperCase(charKey);
       }
       if ((mask & SWT.CTRL) != 0) {
-         if (_ctrlMapCharToOption.containsKey(charKey)) {
-            return _ctrlMapCharToOption.get(charKey).getIntValue();
+         if (ctrlMapCharToOption.containsKey(charKey)) {
+            return ctrlMapCharToOption.get(charKey).getIntValue();
          }
       }
       else if ((mask & SWT.ALT) != 0) {
-         if (_altMapCharToOption.containsKey(charKey)) {
-            return _altMapCharToOption.get(charKey).getIntValue();
+         if (altMapCharToOption.containsKey(charKey)) {
+            return altMapCharToOption.get(charKey).getIntValue();
          }
       }
-      else if (_mapCharToOption.containsKey(charKey)) {
-         return _mapCharToOption.get(charKey).getIntValue();
+      else if (mapCharToOption.containsKey(charKey)) {
+         return mapCharToOption.get(charKey).getIntValue();
       }
       return null;
    }
@@ -454,12 +454,12 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
          key = allowedChars.charAt(0);
          allowedChars = allowedChars.substring(1);
 
-         HashMap<java.lang.Character, IRequestOption> map = _mapCharToOption;
+         HashMap<java.lang.Character, IRequestOption> map = mapCharToOption;
          if (ctrlKey) {
-            map = _ctrlMapCharToOption;
+            map = ctrlMapCharToOption;
          }
          else if (altKey) {
-            map = _altMapCharToOption;
+            map = altMapCharToOption;
          }
          if (map.get(key) == null) {
             map.put(key, option);
@@ -470,23 +470,23 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    }
 
    public String getStringOfKeyStrokeAssignedToOption(int optionIndex) {
-      IRequestOption option = _options.get(optionIndex);
+      IRequestOption option = options.get(optionIndex);
       if (option.getIntValue() == OPT_CANCEL_ACTION) {
          return "Esc";
       }
-      Set<Entry<Character, IRequestOption>> pairs = _mapCharToOption.entrySet();
+      Set<Entry<Character, IRequestOption>> pairs = mapCharToOption.entrySet();
       for (Entry<Character, IRequestOption> pair : pairs) {
          if (pair.getValue() == option) {
             return pair.getKey().toString();
          }
       }
-      pairs = _altMapCharToOption.entrySet();
+      pairs = altMapCharToOption.entrySet();
       for (Entry<Character, IRequestOption> pair : pairs) {
          if (pair.getValue() == option) {
             return "<alt>-" + pair.getKey();
          }
       }
-      pairs = _ctrlMapCharToOption.entrySet();
+      pairs = ctrlMapCharToOption.entrySet();
       for (Entry<Character, IRequestOption> pair : pairs) {
          if (pair.getValue() == option) {
             return "<ctrl>-" + pair.getKey();
@@ -500,7 +500,7 @@ public abstract class SyncRequest extends SerializableObject implements ISynchro
    }
 
    public IRequestOption getRequestOptionByIntValue(int value) {
-      for (IRequestOption reqOpt : _options) {
+      for (IRequestOption reqOpt : options) {
          if (reqOpt.getIntValue() == value) {
             return reqOpt;
          }

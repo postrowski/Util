@@ -2,17 +2,17 @@ package ostrowski.util;
 
 public class SemaphoreAutoLocker implements AutoCloseable
 {
-   private final Semaphore _semaphore;
+   private final Semaphore semaphore;
    public SemaphoreAutoLocker(Semaphore semaphore) {
-      this._semaphore = semaphore;
-      if (this._semaphore != null) {
-         this._semaphore.lock();
+      this.semaphore = semaphore;
+      if (this.semaphore != null) {
+         this.semaphore.lock();
       }
    }
    @Override
    public void close() {
-      if (this._semaphore != null) {
-         this._semaphore.unlock();
+      if (this.semaphore != null) {
+         this.semaphore.unlock();
       }
    }
 }

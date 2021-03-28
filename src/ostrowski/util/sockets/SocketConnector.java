@@ -10,8 +10,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -32,26 +30,25 @@ public abstract class SocketConnector extends Thread
 
    public abstract void diag(String message);
 
-   final boolean _connected;
-   boolean          _running;
-   Socket           _socket       = null;
-   DataInputStream  _inputStream  = null;
-   DataOutputStream _outputStream = null;
-   static final HashMap<Integer, SyncRequest> _syncMap = new HashMap<>();
-
-   final Semaphore _lock_inputStream = new Semaphore("SocketConnector", Semaphore.CLASS_SOCKETCONNECTOR);
+   final boolean connected;
+   boolean          running;
+   Socket           socket       = null;
+   DataInputStream  inputStream  = null;
+   DataOutputStream outputStream = null;
+   static final HashMap<Integer, SyncRequest> syncMap          = new HashMap<>();
+   final        Semaphore                     lock_inputStream = new Semaphore("SocketConnector", Semaphore.CLASS_SOCKETCONNECTOR);
 
    public SocketConnector(String threadName)
    {
       super(threadName);
-      _connected = false;
-      _running = false;
+      connected = false;
+      running = false;
    }
 
    public void connect(String ipAddress, int port)
    {
       try {
-         _socket = new Socket(ipAddress, port);
+         socket = new Socket(ipAddress, port);
          initStreams();
       } catch (IOException e) {
          e.printStackTrace();
@@ -60,18 +57,18 @@ public abstract class SocketConnector extends Thread
 
    public void setSocket(Socket socket)
    {
-      _socket = socket;
+      this.socket = socket;
       initStreams();
    }
 
    public void initStreams()
    {
-      if (_socket != null) {
-         diag("connected to " + _socket.getInetAddress().getHostAddress());
+      if (socket != null) {
+         diag("connected to " + socket.getInetAddress().getHostAddress());
          try {
-            _socket.setSoLinger(true, 10/*linger_timeout_in_seconds*/);
-            _outputStream = new DataOutputStream(_socket.getOutputStream());
-            _inputStream = new DataInputStream(_socket.getInputStream());
+            socket.setSoLinger(true, 10/*linger_timeout_in_seconds*/);
+            outputStream = new DataOutputStream(socket.getOutputStream());
+            inputStream = new DataInputStream(socket.getInputStream());
          } catch (IOException e) {
             e.printStackTrace();
          }
@@ -84,15 +81,15 @@ public abstract class SocketConnector extends Thread
 
    public void shutdown()
    {
-      _running = false;
+      running = false;
       try {
-         _socket.shutdownInput();
-         _socket.shutdownOutput();
-         _socket.close();
-         _inputStream.close();
-         synchronized (_inputStream) {
-            try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(_lock_inputStream)) {
-               _inputStream.notifyAll();
+         socket.shutdownInput();
+         socket.shutdownOutput();
+         socket.close();
+         inputStream.close();
+         synchronized (inputStream) {
+            try (SemaphoreAutoLocker sal = new SemaphoreAutoLocker(lock_inputStream)) {
+               inputStream.notifyAll();
             }
          }
          this.interrupt();
@@ -103,11 +100,11 @@ public abstract class SocketConnector extends Thread
    @Override
    public void run()
    {
-      _running = true;
+      running = true;
       diag("running in thread " + getName());
-      if (_socket != null) {
+      if (socket != null) {
          try {
-            while (_running) {
+            while (running) {
                readAndProcessMessageFromSocket();
             }
          } catch (IOException e) {
@@ -124,9 +121,9 @@ public abstract class SocketConnector extends Thread
       // Receive the ID of the incoming event from the client and
       // create an event object of the appropriate type with data
       // from the stream
-      int msgSize = _inputStream.readInt();
+      int msgSize = inputStream.readInt();
       byte[] msgBuf = new byte[msgSize];
-      _inputStream.readFully(msgBuf);
+      inputStream.readFully(msgBuf);
       byte[] diagBuf = new byte[msgSize+4];
       diagBuf[0] = (byte)(msgSize >>> 24);
       diagBuf[1] = (byte)(msgSize >>> 16);
@@ -154,12 +151,12 @@ public abstract class SocketConnector extends Thread
             SyncRequest origObj = null;
             if (inObj instanceof Response) {
                Response response = (Response) inObj;
-               origObj = _syncMap.remove(response.getSyncKey());
+               origObj = syncMap.remove(response.getSyncKey());
                origObj.setFullAnswerID(response.getFullAnswerID());
             }
             if (inObj instanceof SyncRequest) {
                SyncRequest newReq = (SyncRequest) inObj;
-               origObj = _syncMap.remove(newReq.getSyncKey());
+               origObj = syncMap.remove(newReq.getSyncKey());
                if (origObj != null) {
                   diag("original Object found.");
                   origObj.copyAnswer(newReq);
@@ -206,7 +203,7 @@ public abstract class SocketConnector extends Thread
             SyncRequest actReq = (SyncRequest) objToSend;
             // Only track the request message, not the response going back.
             if (!actReq.isAnswered()) {
-               _syncMap.put(actReq.getSyncKey(), actReq);
+               syncMap.put(actReq.getSyncKey(), actReq);
             }
          }
          objToSend.serializeToStream(outStream);
@@ -226,7 +223,7 @@ public abstract class SocketConnector extends Thread
          }
 
          long timeStart = System.currentTimeMillis();
-         _outputStream.write(newBuf);
+         outputStream.write(newBuf);
          long duration = System.currentTimeMillis() - timeStart;
          diag("sent object: (" + duration + "ms) to " + target + ": " + objToSend);
          return true;

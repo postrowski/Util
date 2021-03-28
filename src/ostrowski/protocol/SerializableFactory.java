@@ -10,8 +10,8 @@ import ostrowski.DebugBreak;
 public class SerializableFactory
 {
 
-   static final HashMap<String, Class<? extends SerializableObject>> _classMap = new HashMap<>();
-   static final HashMap<Class<? extends SerializableObject>, String> _keyMap   = new HashMap<>();
+   static final HashMap<String, Class<? extends SerializableObject>> CLASS_MAP = new HashMap<>();
+   static final HashMap<Class<? extends SerializableObject>, String> KEY_MAP   = new HashMap<>();
 
    static {
       registerClass("ClinID", ClientID.class);
@@ -27,11 +27,11 @@ public class SerializableFactory
       try {
          // make sure we can instantiate a new instance without any parameters.
          cls.getDeclaredConstructor().newInstance();
-         if (_classMap.get(key) != null) {
-            throw new IllegalArgumentException("Key " + key + " already used for " + _classMap.get(key));
+         if (CLASS_MAP.get(key) != null) {
+            throw new IllegalArgumentException("Key " + key + " already used for " + CLASS_MAP.get(key));
          }
-         if (_keyMap.get(cls) != null) {
-            throw new IllegalArgumentException("class " + cls + " already mapped with key " + _keyMap.get(cls));
+         if (KEY_MAP.get(cls) != null) {
+            throw new IllegalArgumentException("class " + cls + " already mapped with key " + KEY_MAP.get(cls));
          }
          success = true;
       } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
@@ -40,13 +40,13 @@ public class SerializableFactory
       if (!success) {
          DebugBreak.debugBreak();
       }
-      _classMap.put(key, cls);
-      _keyMap.put(cls, key);
+      CLASS_MAP.put(key, cls);
+      KEY_MAP.put(cls, key);
    }
 
    public static String getKey(SerializableObject serObj) {
       Class<? extends SerializableObject> serClass = serObj.getClass();
-      String res = (_keyMap.get(serClass));
+      String res = (KEY_MAP.get(serClass));
       while (res == null) {
          Type superClass = serClass.getGenericSuperclass();
          if (!(superClass instanceof Class) || superClass.equals(SerializableObject.class)) {
@@ -55,14 +55,14 @@ public class SerializableFactory
             throw new UnsupportedOperationException(message);
          }
          serClass = (Class<? extends SerializableObject>) superClass;
-         res = (_keyMap.get(serClass));
+         res = (KEY_MAP.get(serClass));
       }
       return res;
    }
 
    public static SerializableObject readObject(String eventID, DataInputStream inMsg)
    {
-      Class<?> objClass = _classMap.get(eventID);
+      Class<?> objClass = CLASS_MAP.get(eventID);
       if (objClass != null)
       {
          try {

@@ -3,22 +3,22 @@ package ostrowski.util;
 import ostrowski.DebugBreak;
 
 public class AnglePair implements Comparable<AnglePair> {
-   public static final double TWO_PI = 2 * Math.PI;
+   public static final  double TWO_PI         = 2 * Math.PI;
    private static final double NINETY_DEGREES = Math.PI / 2;
-   public double _startAngle;
-   public double _stopAngle;
+   public               double startAngle;
+   public               double stopAngle;
 
    public AnglePair(double startAngle, double stopAngle) {
-      _startAngle = startAngle;
-      _stopAngle = stopAngle;
+      this.startAngle = startAngle;
+      this.stopAngle = stopAngle;
       ensureNormalized();
    }
 
    protected void ensureNormalized() {
-      _startAngle = normalizeAngle(_startAngle, TWO_PI);
-      _stopAngle  = normalizeAngle(_stopAngle,  TWO_PI);
-      while (_stopAngle < _startAngle) {
-         _stopAngle += TWO_PI;
+      startAngle = normalizeAngle(startAngle, TWO_PI);
+      stopAngle = normalizeAngle(stopAngle, TWO_PI);
+      while (stopAngle < startAngle) {
+         stopAngle += TWO_PI;
       }
    }
 
@@ -31,8 +31,8 @@ public class AnglePair implements Comparable<AnglePair> {
    }
 
 //   public boolean intersectsAngle(double startAngle, double stopAngle) {
-//      if (stopAngle < _startAngle) return false;
-//      if (startAngle > _stopAngle) return false;
+//      if (stopAngle < startAngle) return false;
+//      if (startAngle > stopAngle) return false;
 //      return true;
 //   }
 
@@ -62,84 +62,84 @@ public class AnglePair implements Comparable<AnglePair> {
       if (includesAngle(angleIn, 0.0/*tolerance*/)) {
          return;
       }
-      // _startAngle must always be between 0 and 2PI
-      // _stopAngle must always be higher than _startAngle
+      // startAngle must always be between 0 and 2PI
+      // stopAngle must always be higher than startAngle
       double angle = normalizeAngle(angleIn, TWO_PI);
 
-      double angleFromStart = normalizeAngle(_startAngle - angle, TWO_PI);
-      double angleFromStop  = normalizeAngle(angle - _stopAngle, TWO_PI);
+      double angleFromStart = normalizeAngle(startAngle - angle, TWO_PI);
+      double angleFromStop  = normalizeAngle(angle - stopAngle, TWO_PI);
 
       if (angleFromStart < angleFromStop) {
          // becomes the new start
-         _startAngle = angle;
+         startAngle = angle;
       }
       else {
          // becomes the new stop
-         _stopAngle = angle;
+         stopAngle = angle;
       }
       //ensureAcute();
       ensureNormalized();
    }
 
    public double width() {
-      return _stopAngle - _startAngle;
+      return stopAngle - startAngle;
    }
 
    public boolean includesAngle(double angleIn, double tolerance) {
       double angle = normalizeAngle(angleIn, TWO_PI);
-      if (angle < _startAngle) {
+      if (angle < startAngle) {
          angle += TWO_PI;
       }
-      return (angle <= _stopAngle);
+      return (angle <= stopAngle);
    }
 
    @Override
    public int compareTo(AnglePair arg) {
-      return Double.compare(_startAngle, arg._startAngle);
+      return Double.compare(startAngle, arg.startAngle);
    }
 
    public boolean containsCompletely(AnglePair other) {
-      return (includesAngle(other._startAngle, 0.0/*tolerance*/) &&
-              includesAngle(other._stopAngle, 0.0/*tolerance*/));
+      return (includesAngle(other.startAngle, 0.0/*tolerance*/) &&
+              includesAngle(other.stopAngle, 0.0/*tolerance*/));
    }
 
    public boolean overlapsWith(AnglePair other) {
-      return (includesAngle(other._startAngle, 0.0/*tolerance*/) ||
-              includesAngle(other._stopAngle, 0.0/*tolerance*/)  ||
-              other.includesAngle(_startAngle, 0.0/*tolerance*/) ||
-              other.includesAngle(_stopAngle, 0.0/*tolerance*/));
+      return (includesAngle(other.startAngle, 0.0/*tolerance*/) ||
+              includesAngle(other.stopAngle, 0.0/*tolerance*/) ||
+              other.includesAngle(startAngle, 0.0/*tolerance*/) ||
+              other.includesAngle(stopAngle, 0.0/*tolerance*/));
    }
 
    // This method will expand the size of the angle by adding the two angles together, IF they overlap.
    // If they don't overlap, then the union can not be contained within a single AnglePair, so 'null' is returned.
    public AnglePair unionWithIfOverlapping(AnglePair other, double tolerance) {
-      if (this.includesAngle(other._startAngle, tolerance)) {
+      if (this.includesAngle(other.startAngle, tolerance)) {
          double stopAngle;
-         if (this.includesAngle(other._stopAngle, tolerance)) {
+         if (this.includesAngle(other.stopAngle, tolerance)) {
             // this AnglePair fully encloses the other AnglePair, or these angles complete a full circle
             if (this.width() < other.width()) {
                return new AnglePair(0, TWO_PI); // fill circle
             }
-            stopAngle = _stopAngle;
+            stopAngle = this.stopAngle;
          }
          else {
-            stopAngle = other._stopAngle;
-            while (stopAngle < _startAngle) {
+            stopAngle = other.stopAngle;
+            while (stopAngle < startAngle) {
                stopAngle += (2 * Math.PI);
             }
          }
-         return new AnglePair(_startAngle, stopAngle);
+         return new AnglePair(startAngle, stopAngle);
       }
-      if (other.includesAngle(this._startAngle, tolerance)) {
+      if (other.includesAngle(this.startAngle, tolerance)) {
          return other.unionWithIfOverlapping(this, tolerance);
       }
       // These angles don't overlap.
       // check if they are very very close.
-//      if (Math.abs(_stopAngle - other._startAngle) < 0.01) {
-//         return new AnglePair(_startAngle, other._stopAngle);
+//      if (Math.abs(stopAngle - other.startAngle) < 0.01) {
+//         return new AnglePair(startAngle, other.stopAngle);
 //      }
-//      if (Math.abs(other._stopAngle - _startAngle) < 0.01) {
-//         return new AnglePair(other._startAngle, _stopAngle);
+//      if (Math.abs(other.stopAngle - startAngle) < 0.01) {
+//         return new AnglePair(other.startAngle, stopAngle);
 //      }
       return null;
    }
@@ -148,16 +148,16 @@ public class AnglePair implements Comparable<AnglePair> {
    // If these angles don't overlap at all, it will return null.
    public AnglePair intersectionWith(AnglePair other) {
       if (overlapsWith(other)) {
-         double startAngle = Math.max(_startAngle, other._startAngle);
-         double stopAngle  = Math.min(_stopAngle,  other._stopAngle);
+         double startAngle = Math.max(this.startAngle, other.startAngle);
+         double stopAngle  = Math.min(this.stopAngle, other.stopAngle);
          return new AnglePair(startAngle, stopAngle);
       }
       return null;
    }
 
    public AnglePair adjustWidth(double angleRatio) {
-      double center = (_startAngle + _stopAngle)/2;
-      double width = _stopAngle - _startAngle;
+      double center = (startAngle + stopAngle) / 2;
+      double width = stopAngle - startAngle;
       double newWidth = width * angleRatio;
       double startAngle = center - (newWidth/2);
       double stopAngle  = center + (newWidth/2);
@@ -170,41 +170,41 @@ public class AnglePair implements Comparable<AnglePair> {
          return false;
       }
       AnglePair otherAP = (AnglePair) other;
-      return (this._startAngle == otherAP._startAngle) && (this._stopAngle == otherAP._stopAngle);
+      return (this.startAngle == otherAP.startAngle) && (this.stopAngle == otherAP.stopAngle);
    }
 
    @Override
    public int hashCode() {
-      return Double.valueOf(this._startAngle).hashCode() ^ Double.valueOf(this._stopAngle).hashCode();
+      return Double.valueOf(this.startAngle).hashCode() ^ Double.valueOf(this.stopAngle).hashCode();
    }
 
    public double diff(AnglePair otherAP) {
-      return Math.abs(this._startAngle - otherAP._startAngle) +
-             Math.abs(this._stopAngle  - otherAP._stopAngle);
+      return Math.abs(this.startAngle - otherAP.startAngle) +
+             Math.abs(this.stopAngle - otherAP.stopAngle);
    }
 
    @Override
    public String toString() {
       // always display in degrees
-      return "[" + (Math.round((_startAngle * 36000) / TWO_PI) / 100.0) +
-               ", " + (Math.round((_stopAngle * 36000) / TWO_PI) / 100.0) + "]";
+      return "[" + (Math.round((startAngle * 36000) / TWO_PI) / 100.0) +
+             ", " + (Math.round((stopAngle * 36000) / TWO_PI) / 100.0) + "]";
    }
 
 }
 
 //public class AnglePair implements Comparable<AnglePair> {
 //   public static double TWO_PI = 2 * Math.PI;
-//   public double _startAngle;
-//   public double _width;
-//   public double _stopAngle;
+//   public double startAngle;
+//   public double width;
+//   public double stopAngle;
 //   public AnglePair(double startAngle, double stopAngle) {
-//      _startAngle = normalizeAngle(startAngle, TWO_PI);
-//      _stopAngle = stopAngle;
-//      _width = normalizeAngle(stopAngle - startAngle, TWO_PI);
+//      startAngle = normalizeAngle(startAngle, TWO_PI);
+//      stopAngle = stopAngle;
+//      width = normalizeAngle(stopAngle - startAngle, TWO_PI);
 //\   }
 //   protected void ensureNormalized() {
-//      _startAngle = normalizeAngle(_startAngle, TWO_PI);
-//      _width = normalizeAngle(_width, TWO_PI);
+//      startAngle = normalizeAngle(_startAngle, TWO_PI);
+//      width = normalizeAngle(_width, TWO_PI);
 //   }
 //   protected void ensureAcute() {
 //      ensureNormalized();
@@ -235,67 +235,67 @@ public class AnglePair implements Comparable<AnglePair> {
 //      if (includesAngle(angle)) {
 //         return;
 //      }
-//      // _startAngle must always be between 0 and 2PI
-//      // _stopAngle must always be higher than _startAngle
+//      // startAngle must always be between 0 and 2PI
+//      // stopAngle must always be higher than startAngle
 //      angle = normalizeAngle(angle, TWO_PI);
 //
-//      double angleFromStart = normalizeAngle(_startAngle - angle, TWO_PI);
-//      double angleFromStop  = normalizeAngle(angle - _stopAngle, TWO_PI);
+//      double angleFromStart = normalizeAngle(startAngle - angle, TWO_PI);
+//      double angleFromStop  = normalizeAngle(angle - stopAngle, TWO_PI);
 //
 //      if (angleFromStart < angleFromStop) {
 //         // becomes the new start
-//         _startAngle = angle;
+//         startAngle = angle;
 //      }
 //      else {
 //         // becomes the new stop
-//         _stopAngle = angle;
+//         stopAngle = angle;
 //      }
 //      ensureAcute();
 //   }
 //   public double width() {
-//      return _width;
+//      return width;
 //   }
 //
 //   public boolean includesAngle(double angle) {
 //      angle = normalizeAngle(angle, TWO_PI);
-//      if (angle < _startAngle) {
+//      if (angle < startAngle) {
 //         angle += TWO_PI;
 //      }
-//      return (angle <= (_startAngle + _width));
+//      return (angle <= (startAngle + width));
 //   }
 //   public boolean containsCompletely(AnglePair other) {
-//      return (includesAngle(other._startAngle) &&
-//              includesAngle(other._startAngle + other._width));
+//      return (includesAngle(other.startAngle) &&
+//              includesAngle(other.startAngle + other._width));
 //   }
 //   // This method will expand the size of the angle by adding the two angles together, IF they overlap.
 //   // If they don't overlap, then the union can not be contained within a single AnglePair, so 'null' is returned.
 //   public AnglePair unionWithIfOverlapping(AnglePair other) {
-//      if (this._startAngle > other._startAngle) {
+//      if (this.startAngle > other.startAngle) {
 //         return other.unionWithIfOverlapping(this);
 //      }
-//      // At this point, we know that this._startAngle <= other._startAngle
+//      // At this point, we know that this.startAngle <= other.startAngle
 //
 //      double tolerance = 0.0;
-//      if (((this._startAngle + this._width) + tolerance) > other._startAngle) {
+//      if (((this.startAngle + this.width) + tolerance) > other.startAngle) {
 //         // no overlapping regions
 //         return null;
 //      }
 //
 //      // regions overlap. New AnglePairs endpoint is the same as the others endpoint
-//      return new AnglePair(_startAngle, (other._startAngle + other._width));
+//      return new AnglePair(startAngle, (other.startAngle + other.width));
 //   }
 //
 //   // this method will return a smaller angle than this angle.
 //   // If these angles don't overlap at all, it will return null.
 //   public AnglePair intersectionWith(AnglePair other) {
-//      if (this._startAngle > other._startAngle) {
+//      if (this.startAngle > other.startAngle) {
 //         return other.intersectionWith(this);
 //      }
-//      // At this point, we know that this._startAngle <= other._startAngle
+//      // At this point, we know that this._startAngle <= other.startAngle
 //
 //      if (overlapsWith(other)) {
-//         double startAngle = Math.max(_startAngle, other._startAngle);
-//         double stopAngle  = Math.min(_stopAngle,  other._stopAngle);
+//         double startAngle = Math.max(startAngle, other.startAngle);
+//         double stopAngle  = Math.min(stopAngle,  other.stopAngle);
 //         return new AnglePair(startAngle, stopAngle);
 //      }
 //      return null;

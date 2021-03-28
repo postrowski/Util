@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Text;
 
 public class Helper
 {
-   protected final List<Control> _controlList = new ArrayList<>();
+   protected final List<Control> controlList = new ArrayList<>();
 
    public static Composite createComposite(Composite parent, int hSpan, int gridDataStyle)
    {
@@ -55,7 +55,7 @@ public class Helper
       if (combo.getChildren().length > 0) {
          combo.setText(combo.getItem(0));
       }
-      _controlList.add(combo);
+      controlList.add(combo);
       return combo;
    }
 
@@ -73,7 +73,7 @@ public class Helper
          label.setFont(font);
          font.dispose();
       }
-      _controlList.add(label);
+      controlList.add(label);
       return label;
    }
 
@@ -106,7 +106,7 @@ public class Helper
          text.setFont(font);
          font.dispose();
       }
-      _controlList.add(text);
+      controlList.add(text);
       return text;
    }
 
@@ -143,7 +143,7 @@ public class Helper
       Font font = new Font(parent.getDisplay(), new FontData("Arial", 10, SWT.BOLD));
       group.setFont(font);
       font.dispose();
-      _controlList.add(group);
+      controlList.add(group);
       return group;
    }
 
@@ -174,7 +174,7 @@ public class Helper
       data.horizontalSpan = hSpan;
       button.setLayoutData(data);
       button.addSelectionListener(sl);
-      _controlList.add(button);
+      controlList.add(button);
       return button;
    }
 
@@ -208,7 +208,7 @@ public class Helper
    }
 
    public void enableControls(boolean enabledFlag) {
-      for (Control element : _controlList) {
+      for (Control element : controlList) {
          element.setEnabled(enabledFlag);
          if (element instanceof Text) {
             Text textElement = (Text) element;

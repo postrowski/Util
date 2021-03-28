@@ -6,39 +6,39 @@ import java.io.IOException;
 
 public class RequestOption extends SerializableObject implements IRequestOption
 {
-   private String  _name;
-   private int     _value;
-   private boolean _enabled;
+   private String  name;
+   private int     value;
+   private boolean enabled;
 
    public RequestOption() {}
 
    public RequestOption(String name, int value, boolean enabled) {
-      this._name = name;
-      this._value = value;
-      this._enabled = enabled;
+      this.name = name;
+      this.value = value;
+      this.enabled = enabled;
    }
 
    @Override
    public String getName() {
-      return this._name;
+      return this.name;
    }
 
    @Override
    public int getIntValue() {
-      return this._value;
+      return this.value;
    }
 
    @Override
    public boolean isEnabled() {
-      return this._enabled;
+      return this.enabled;
    }
 
    @Override
    public void serializeToStream(DataOutputStream out) {
       try {
-         writeToStream(_name, out);
-         writeToStream(_value, out);
-         writeToStream(_enabled, out);
+         writeToStream(name, out);
+         writeToStream(value, out);
+         writeToStream(enabled, out);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -47,9 +47,9 @@ public class RequestOption extends SerializableObject implements IRequestOption
    @Override
    public void serializeFromStream(DataInputStream in) {
       try {
-         _name         = readString(in);
-         _value        = readInt(in);
-         _enabled      = readBoolean(in);
+         name = readString(in);
+         value = readInt(in);
+         enabled = readBoolean(in);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -57,16 +57,16 @@ public class RequestOption extends SerializableObject implements IRequestOption
 
    @Override
    public void setAnswerStr(String name) {
-      this._name = name;
+      this.name = name;
    }
 
    @Override
    public void setAnswerID(int value) {
-      this._value = value;
+      this.value = value;
    }
 
    @Override
    public void setEnabled(boolean enabled) {
-      this._enabled = enabled;
+      this.enabled = enabled;
    }
 }

@@ -10,17 +10,17 @@ import java.io.IOException;
 
 public class ObjectInfo extends SerializableObject
 {
-   SerializableObject _object;
+   SerializableObject object;
 
    public ObjectInfo() {
    }
 
    public ObjectInfo(SerializableObject obj) {
-      _object = obj;
+      object = obj;
    }
 
    public SerializableObject getObject() {
-      return _object;
+      return object;
    }
 
    @Override
@@ -28,7 +28,7 @@ public class ObjectInfo extends SerializableObject
    {
       try {
          String key = readString(in);
-         _object = SerializableFactory.readObject(key, in);
+         object = SerializableFactory.readObject(key, in);
       } catch (IOException e) {
          e.printStackTrace();
       }
@@ -37,13 +37,13 @@ public class ObjectInfo extends SerializableObject
    @Override
    public void serializeToStream(DataOutputStream out)
    {
-      String key = SerializableFactory.getKey(_object);
+      String key = SerializableFactory.getKey(object);
       try {
          writeToStream(key, out);
       } catch (IOException e) {
          e.printStackTrace();
       }
-      _object.serializeToStream(out);
+      object.serializeToStream(out);
    }
 
 }

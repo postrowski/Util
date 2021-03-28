@@ -31,34 +31,34 @@ public interface IMonitorableObject
 //   public Vector<IMonitoringObject> getSnapShotOfWatchers();
 //   public String getObjectIDString();
 
-   MonitoredObject _monitoredObj = new MonitoredObject("");
+   MonitoredObject monitoredObj = new MonitoredObject("");
 
    default void notifyWatchers(IMonitorableObject originalWatchedObject,
                                IMonitorableObject modifiedWatchedObject,
                                Object changeNotification,
                                Vector<IMonitoringObject> skipList,
                                Diagnostics diag)  {
-      _monitoredObj.notifyWatchers(originalWatchedObject, modifiedWatchedObject, changeNotification, skipList, diag);
+      monitoredObj.notifyWatchers(originalWatchedObject, modifiedWatchedObject, changeNotification, skipList, diag);
    }
 
    default String getObjectIDString() {
-      return _monitoredObj.getObjectIDString();
+      return monitoredObj.getObjectIDString();
    }
 
    default Vector<IMonitoringObject> getSnapShotOfWatchers() {
-      return _monitoredObj.getSnapShotOfWatchers();
+      return monitoredObj.getSnapShotOfWatchers();
    }
 
    default RegisterResults registerAsWatcher(IMonitoringObject watcherObject, Diagnostics diag) {
-      return _monitoredObj.registerAsWatcher(watcherObject, diag);
+      return monitoredObj.registerAsWatcher(watcherObject, diag);
    }
 
    default UnRegisterResults unregisterAsWatcher(IMonitoringObject watcherObject, Diagnostics diag) {
-      return _monitoredObj.unregisterAsWatcher(watcherObject, diag);
+      return monitoredObj.unregisterAsWatcher(watcherObject, diag);
    }
 
    default UnRegisterResults unregisterAsWatcherAllInstances(IMonitoringObject watcherObject, Diagnostics diag) {
-      return _monitoredObj.unregisterAsWatcherAllInstances(watcherObject, diag);
+      return monitoredObj.unregisterAsWatcherAllInstances(watcherObject, diag);
    }
 
 

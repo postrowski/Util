@@ -12,24 +12,24 @@ import java.util.Vector;
 
 public class Semaphore {
 
-   // Don't allow access to _lockCount, because it must always be used
+   // Don't allow access to lockCount, because it must always be used
    // in an atomic operation to lock the object. Use tryLock() if you
    // want to fail (throw exception) if the call to lock() would block.
-   // _lockCount tells us how many times this Semaphore is locked by the
+   // lockCount tells us how many times this Semaphore is locked by the
    // current thread. When this is zero, the Semaphore is unlocked.
-   protected int _lockCount;
+   protected int lockCount;
 
    // This can be used to see how many threads are waiting for this lock
-   public int _waitCount;
+   public int waitCount;
 
    // The Semaphore object can also be used to track 'synchronize' blocks
    // without actually locking anything itself. When we use it in this manner,
    // we need to keep track of how many times 'track' and 'untrack' have
    // been called.
-   public int _trackCount;
+   public int trackCount;
 
    // This lets us identify which Thread owns this Semaphore
-   public Thread _ownerThread;
+   public Thread ownerThread;
 
    // This Hashtable provides us with a mapping between the current thread
    // and a Vector that contains all the Semaphore objects that the thread
@@ -38,14 +38,14 @@ public class Semaphore {
 
    // This variable gives us a name we can display in the error cases, making
    // it easier to locate the violations
-   public final String _name;
+   public final String name;
 
-   Semaphore _peerLockAuthorityParent;
+   Semaphore peerLockAuthorityParent;
 
    // This member is used to keep track of the data output stream that this
    // Semaphore is protecting. We keep track of this, so we can use this
    // Semaphore object to close the socket if this blocking.
-   final LockableDataOutputStream _lockableDataOutputStream;
+   final LockableDataOutputStream lockableDataOutputStream;
 
    // This is used to detect potential deadlocks. When multiple Semaphores
    // are locked, they MUST be locked in a descending order. Therefore, if
@@ -59,7 +59,7 @@ public class Semaphore {
    // lock simple Semaphores (order 1), then the Semaphore should have an
    // order of 2. Similarly, if another Semaphore need to lock this order 2
    // Semaphore, it should have an order of 3.
-   public final int _order;
+   public final int order;
    // To assign an order for a given Semaphore, you should
    // use one of the constants defined here (or define a new one here):
 
@@ -87,33 +87,33 @@ public class Semaphore {
    //static int DependsOn(int d1, int d2, int d3, int d4, int d5, int d6, int d7) { return Math.max(Math.max(Math.max(Math.max(Math.max(Math.max(d1, d2), d3), d4), d5), d6), d7)+1;}
 
    public Semaphore(String name, int order) {
-      _name                     = name + "[" + order + "]";
-      _order                    = order;
-      _lockCount                = 0;
-      _waitCount                = 0;
-      _trackCount               = 0;
-      _peerLockAuthorityParent  = null;
-      _lockableDataOutputStream = null;
+      this.name = name + "[" + order + "]";
+      this.order = order;
+      lockCount = 0;
+      waitCount = 0;
+      trackCount = 0;
+      peerLockAuthorityParent = null;
+      lockableDataOutputStream = null;
    }
 
    public Semaphore(String name, int order, LockableDataOutputStream lockableDataOutStream) {
-      _name                     = name + "[" + order + "]";
-      _order                    = order;
-      _lockCount                = 0;
-      _waitCount                = 0;
-      _trackCount               = 0;
-      _peerLockAuthorityParent  = null;
-      _lockableDataOutputStream = lockableDataOutStream;
+      this.name = name + "[" + order + "]";
+      this.order = order;
+      lockCount = 0;
+      waitCount = 0;
+      trackCount = 0;
+      peerLockAuthorityParent = null;
+      lockableDataOutputStream = lockableDataOutStream;
    }
 
    @Override
    protected void finalize() {
       // make sure that this object was released before it is deleted
-      if ((_lockCount != 0) || (_waitCount != 0))
+      if ((lockCount != 0) || (waitCount != 0))
       {
-         String strReason = "Semaphore " + _name;
-         strReason +=       " being destroyed while " + _lockCount;
-         strReason +=       " locks are held by thread " + _ownerThread.getName();
+         String strReason = "Semaphore " + name;
+         strReason += " being destroyed while " + lockCount;
+         strReason += " locks are held by thread " + ownerThread.getName();
 
          ReportPossibleDeadlockCondition(strReason);
       }
@@ -125,22 +125,22 @@ public class Semaphore {
     * @param parentLock The Semaphore that must be locked to lock both objects at the same time
     */
    public void setPeerLockAuthorityParent(Semaphore parentLock) {
-      _peerLockAuthorityParent = parentLock;
+      peerLockAuthorityParent = parentLock;
    }
 
    public synchronized void lock() {
       // If we already own this Semaphore, don't try to re-lock it.
-      if (_ownerThread != null)
+      if (ownerThread != null)
       {
-         if (_ownerThread.equals(Thread.currentThread()))
+         if (ownerThread.equals(Thread.currentThread()))
          {
-            ++_lockCount;
+            ++lockCount;
             return;
          }
       }
 
-      ++_waitCount;
-      while (_lockCount > 0) {
+      ++waitCount;
+      while (lockCount > 0) {
          // we must be notified not interrupted,
          // so catch and ignore interruptions.
          try {
@@ -155,18 +155,18 @@ public class Semaphore {
          }
       }
       // we have acquired (locked) this Semaphore
-      --_waitCount;
-      ++_lockCount;
-      _ownerThread = Thread.currentThread();
+      --waitCount;
+      ++lockCount;
+      ownerThread = Thread.currentThread();
       track();
    }
 
    public synchronized boolean unlock() {
       // Make sure that the current thread really owns this Semaphore
 
-      // If _ownerThread is null, then this will throw a RuntimeException
+      // If ownerThread is null, then this will throw a RuntimeException
       // (NullPointerException), which is the desired behaviour (see below)
-      if (!_ownerThread.equals(Thread.currentThread()))
+      if (!ownerThread.equals(Thread.currentThread()))
       {
          // this is really bad if this occurs. It means that we don't own this
          // object, but we are trying to unlock it.
@@ -177,14 +177,14 @@ public class Semaphore {
          throw new IllegalStateException();
       }
 
-      if (--_lockCount == 0)
+      if (--lockCount == 0)
       {
          // If this was the last lock held by the current thread
          // on this Semaphore, then the Semaphore is now unlocked.
          untrack();
 
-         // clear the _ownerThread, and then let another thread lock this.
-         _ownerThread = null;
+         // clear the ownerThread, and then let another thread lock this.
+         ownerThread = null;
 
          // This wakes up one thread, which may be in the lock() function.
          // Since both the unlock() and the lock() are synchronized, the
@@ -200,8 +200,8 @@ public class Semaphore {
 
    public synchronized void track() {
       // If the tackCount is non-zero, then we are already tracking
-      // this object, so we do nothing except increment _trackCount
-      if (++_trackCount > 1) {
+      // this object, so we do nothing except increment trackCount
+      if (++trackCount > 1) {
          return;
       }
 
@@ -226,8 +226,8 @@ public class Semaphore {
 
    public synchronized void untrack() {
       // If the tackCount is non-zero, then we are still tracking
-      // this object, so we do nothing except decrement _trackCount
-      if (--_trackCount > 0) {
+      // this object, so we do nothing except decrement trackCount
+      if (--trackCount > 0) {
          return;
       }
 
@@ -257,8 +257,8 @@ public class Semaphore {
                   int index = threadsLockedSemaphores.lastIndexOf(this);
                   if (index != -1) {
                      String strReason  = "Objects not unlocked in the reverse of the lock order. ";
-                            strReason += "Object "+_name+" is being unlocked, ";
-                            strReason += "while object "+lastLockedSem._name+ " was most recently locked.";
+                            strReason += "Object " + name + " is being unlocked, ";
+                            strReason += "while object " + lastLockedSem.name + " was most recently locked.";
 
                      ReportPossibleDeadlockCondition(strReason);
                      // remove the 'this' from the Vector
@@ -272,32 +272,32 @@ public class Semaphore {
          }
          if (!objectRemoveFromList)
          {
-            if (_trackCount >= 0) {
+            if (trackCount >= 0) {
                // 'This' did not exist in our lock list, report the error and do nothing.
-               ReportPossibleDeadlockCondition("Object "+_name+" unlocked that was not previously locked.");
+               ReportPossibleDeadlockCondition("Object " + name + " unlocked that was not previously locked.");
             }
             else {
                // If the track count was below zero, AND this object was not removed from
                // the list of locked object, then this object was likely forcibly removed when
                // it was found to be tracked while a higher order lock was trying to be locked.
-               _trackCount = 0;
+               trackCount = 0;
             }
          }
       }
-      if (_trackCount < 0)
+      if (trackCount < 0)
       {
          // If the track count is now LESS than zero, report the error
-         ReportPossibleDeadlockCondition("Object "+_name+" untracked more often than it was tracked.");
+         ReportPossibleDeadlockCondition("Object " + name + " untracked more often than it was tracked.");
       }
    }
 
    // The check method combines track() and untrack() to verify that an
    // object lock could be acquired without causing a deadlock, but does
-   // not actually modify the _threadHash Hashtable (for efficiency).
+   // not actually modify the threadHash Hashtable (for efficiency).
    public synchronized void check() {
       // If the tackCount is non-zero, then we are already tracking
       // this object for real, so everything is cool, do nothing.
-      if (_trackCount > 0) {
+      if (trackCount > 0) {
          return;
       }
 
@@ -329,17 +329,17 @@ public class Semaphore {
       if (!threadsLockedSemaphores.isEmpty())
       {
          Semaphore lowestLockedSem = threadsLockedSemaphores.lastElement();
-         if (lowestLockedSem._order <= _order)
+         if (lowestLockedSem.order <= order)
          {
             boolean deadlockPossible = true;
-            if (lowestLockedSem._order == _order) {
+            if (lowestLockedSem.order == order) {
                // If we are locking two items of the same order, and they
                // both have the same peer locking authority parent, and
                // we have that parent locked, then this is not a deadlock condition.
-               if (_peerLockAuthorityParent != null) {
-                  if (lowestLockedSem._peerLockAuthorityParent == _peerLockAuthorityParent) {
+               if (peerLockAuthorityParent != null) {
+                  if (lowestLockedSem.peerLockAuthorityParent == peerLockAuthorityParent) {
                      // Check that we have the parent lock locked.
-                     if (threadsLockedSemaphores.contains(_peerLockAuthorityParent)) {
+                     if (threadsLockedSemaphores.contains(peerLockAuthorityParent)) {
                         deadlockPossible = false;
                      }
                   }
@@ -347,8 +347,8 @@ public class Semaphore {
             }
             if (deadlockPossible) {
                // DEADLOCK CONDITION POSSIBLE!!!!!
-               ReportPossibleDeadlockCondition("order violation: object " + lowestLockedSem._name +
-                                               " locked, while attempting to lock object " + _name + "." +
+               ReportPossibleDeadlockCondition("order violation: object " + lowestLockedSem.name +
+                                               " locked, while attempting to lock object " + name + "." +
                                                (unlockLockedObject ? (lineSeparator + "Object will be unlocked manually.") : ""));
                if (unlockLockedObject) {
                   // Since we have already reported this error condition once, we
@@ -367,11 +367,11 @@ public class Semaphore {
 
    @Override
    public synchronized String toString() {
-      return "Name [order] = " + _name + ", lock count = "+_lockCount + ", wait count = "+_waitCount+", track count = "+_trackCount;
+      return "Name [order] = " + name + ", lock count = " + lockCount + ", wait count = " + waitCount + ", track count = " + trackCount;
    }
 
    public synchronized boolean tryLock() {
-      if ((_lockCount > 0) && (!_ownerThread.equals(Thread.currentThread()))) {
+      if ((lockCount > 0) && (!ownerThread.equals(Thread.currentThread()))) {
          return false;
       }
       this.lock();
@@ -465,14 +465,14 @@ public class Semaphore {
       return callStack;
    }
 
-   static final String _CRLF = "\n";
+   static final String CRLF = "\n";
 
    public static String removeFirstLine(String source) {
-      int beginIndex = source.indexOf(_CRLF);
+      int beginIndex = source.indexOf(CRLF);
       if (beginIndex < 0) {
          return source;
       }
-      return source.substring(beginIndex + _CRLF.length());
+      return source.substring(beginIndex + CRLF.length());
    }
 
    /**
@@ -487,36 +487,36 @@ public class Semaphore {
    // Define this class to be static, so that it can be instantiated from within
    // a static method of the Semaphore class
    public static class SortedStrings {
-      final SortedStringsVector               _sortedKeys;
+      final SortedStringsVector               sortedKeys;
       // This hashtable contains Vector objects, which contain all the strings
       // that are mapped by to by the same keyString. This allows us to accept
       // multiple data strings for a single key string.
-      final Hashtable<String, Vector<String>> _dataTable;
+      final Hashtable<String, Vector<String>> dataTable;
 
       public SortedStrings() {
-         _sortedKeys = new SortedStringsVector();
-         _dataTable  = new Hashtable<>();
+         sortedKeys = new SortedStringsVector();
+         dataTable = new Hashtable<>();
       }
 
       public void AddString(String keyString, String dataString) {
-         _sortedKeys.add(keyString);
-         Vector<String> dataStrings = _dataTable.get(keyString);
+         sortedKeys.add(keyString);
+         Vector<String> dataStrings = dataTable.get(keyString);
          if (dataStrings == null) {
             dataStrings = new Vector<>();
          }
          dataStrings.add(dataString);
-         _dataTable.put(keyString, dataStrings);
+         dataTable.put(keyString, dataStrings);
       }
 
       public String RemoveFirstString() {
-         String firstKey = _sortedKeys.firstElement();
+         String firstKey = sortedKeys.firstElement();
          if (firstKey != null) {
-            _sortedKeys.remove(firstKey);
-            Vector<String> dataStrings = _dataTable.get(firstKey);
+            sortedKeys.remove(firstKey);
+            Vector<String> dataStrings = dataTable.get(firstKey);
             if (dataStrings != null) {
                String firstDataString = dataStrings.remove(0);
                if (dataStrings.size() == 0) {
-                  _dataTable.remove(firstKey);
+                  dataTable.remove(firstKey);
                }
                return firstDataString;
             }
@@ -619,9 +619,9 @@ public class Semaphore {
                for (int i=0 ; i<threadsLockedSemaphores.size() ; i++) {
                   Semaphore lockedSemaphore = threadsLockedSemaphores.elementAt(i);
                   if (lockedSemaphore != null) {
-                     if (lockedSemaphore._lockableDataOutputStream != null) {
+                     if (lockedSemaphore.lockableDataOutputStream != null) {
                         // Determine how long this lock has been locked for.
-                        long lockTimeLength = lockedSemaphore._lockableDataOutputStream.getLockTimeLengthInMilliseconds();
+                        long lockTimeLength = lockedSemaphore.lockableDataOutputStream.getLockTimeLengthInMilliseconds();
                         // If this thread does contain a locked Semaphore of the right
                         // type, then we check to see if it is the longest known operation.
                         diagOutput.append("Thread ").append(currentThread);
@@ -641,7 +641,7 @@ public class Semaphore {
                            if (lockTimeLength > socketOutputTimeAllowanceInMilliseconds) {
                               // record the thread, and the operationID
                               longestOperationTime = lockTimeLength;
-                              dosWithLongestSocketLock = lockedSemaphore._lockableDataOutputStream;
+                              dosWithLongestSocketLock = lockedSemaphore.lockableDataOutputStream;
                            }
                            else {
                               diagOutput.append(", but socket has not been locked for the minimum ");
@@ -682,7 +682,7 @@ public class Semaphore {
       // Update the Hashtable that contains a Vector
       // for each thread that owns a Semaphore.
       Vector<Semaphore> threadsLockedSemaphores = THREAD_HASH.get(Thread.currentThread());
-      // If the thread is already in our _threadHash table, do nothing.
+      // If the thread is already in our threadHash table, do nothing.
       if (threadsLockedSemaphores == null)
       {
          threadsLockedSemaphores = new Vector<>();

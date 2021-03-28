@@ -4,7 +4,6 @@ package ostrowski.util;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
-// Inter-Tel Imports
 
 // This class is intended to be contained by a class that itself
 // implements IMonitoringObject. That class can then forward the
@@ -12,8 +11,8 @@ import java.util.Vector;
 // this contained object.
 public class MonitoringObject implements IMonitoringObject
 {
-   private Hashtable<IMonitorableObject, Integer> _watchedObjects;
-   private Semaphore _lock_watchedObjects;
+   private Hashtable<IMonitorableObject, Integer> watchedObjects;
+   private Semaphore                              lock_watchedObjects;
    // The watchingProxy object allows this object to be contained within an
    // object that implements IMonitoringObject. If this object is contained,
    // then the constructor of this object should be passed a reference
@@ -22,21 +21,21 @@ public class MonitoringObject implements IMonitoringObject
    // the containing object, so that all notifications & registrations go
    // through the container first, before being passed down to this object
    // by the container.
-   public IMonitoringObject _watchingProxy;
+   public IMonitoringObject                       watchingProxy;
 
-   // The _forwardObject allows a MonitoringObject to directly forward all
-   // changes to this object to the watcher of the _forwardObject
-   public MonitoredObject _forwardObject;
+   // The forwardObject allows a MonitoringObject to directly forward all
+   // changes to this object to the watcher of the forwardObject
+   public MonitoredObject forwardObject;
 
-   public String _objectIDString;
+   public String objectIDString;
 
    private void Init(String objectIDString) {
-      _watchedObjects      = new Hashtable<>();
-      _lock_watchedObjects = new Semaphore("MonitoringObject (" + objectIDString + ")",
-                                           Semaphore.CLASS_MONITORINGOBJECT_watchedObjects);
-      _watchingProxy       = this;
-      _forwardObject       = null;
-      _objectIDString      = objectIDString;
+      watchedObjects = new Hashtable<>();
+      lock_watchedObjects = new Semaphore("MonitoringObject (" + objectIDString + ")",
+                                          Semaphore.CLASS_MONITORINGOBJECT_watchedObjects);
+      watchingProxy = this;
+      forwardObject = null;
+      this.objectIDString = objectIDString;
    }
 
    public MonitoringObject(String objectIDString)
@@ -45,20 +44,20 @@ public class MonitoringObject implements IMonitoringObject
    }
    public MonitoringObject(String objectIDString, IMonitoringObject watchingProxy) {
       Init(objectIDString);
-      _watchingProxy = watchingProxy;
+      this.watchingProxy = watchingProxy;
    }
    public MonitoringObject(String objectIDString, MonitoredObject forwardObject) {
       Init(objectIDString);
-      _forwardObject = forwardObject;
+      this.forwardObject = forwardObject;
    }
 
    @Override
    public boolean registerMonitoredObject(IMonitorableObject watchedObject, Diagnostics diag)
    {
-      synchronized (_watchedObjects) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lock_watchedObjects)) {
+      synchronized (watchedObjects) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lock_watchedObjects)) {
 
-            Integer currentCount = _watchedObjects.get(watchedObject);
+            Integer currentCount = watchedObjects.get(watchedObject);
             if (currentCount == null) {
                // This is the first time we are registering as watching this watchedObject
                currentCount = 1;
@@ -66,7 +65,7 @@ public class MonitoringObject implements IMonitoringObject
             else {
                currentCount = currentCount + 1;
             }
-            _watchedObjects.put(watchedObject, currentCount);
+            watchedObjects.put(watchedObject, currentCount);
          }
       }
       return true;
@@ -85,25 +84,25 @@ public class MonitoringObject implements IMonitoringObject
    private boolean unregisterMonitoredObject(IMonitorableObject watchedObject, boolean removeAllInstancesOfWatched, Diagnostics diag)
    {
       boolean objectFound = false;
-      synchronized (_watchedObjects) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lock_watchedObjects)) {
+      synchronized (watchedObjects) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lock_watchedObjects)) {
 
-            Integer currentCount = _watchedObjects.get(watchedObject);
+            Integer currentCount = watchedObjects.get(watchedObject);
             if (currentCount != null) {
                objectFound = true;
 
                if (removeAllInstancesOfWatched) {
-                  _watchedObjects.remove(watchedObject);
+                  watchedObjects.remove(watchedObject);
                }
                else {
                   currentCount = currentCount - 1;
 
                   if (currentCount <= 0) {
                      // When the occurrance count goes to zero, remove it from the list
-                     _watchedObjects.remove(watchedObject);
+                     watchedObjects.remove(watchedObject);
                   }
                   else {
-                     _watchedObjects.put(watchedObject, currentCount);
+                     watchedObjects.put(watchedObject, currentCount);
                   }
                }
             }
@@ -114,7 +113,7 @@ public class MonitoringObject implements IMonitoringObject
    @Override
    public String getObjectIDString()
    {
-      return _objectIDString;
+      return objectIDString;
    }
 
    @Override
@@ -122,9 +121,9 @@ public class MonitoringObject implements IMonitoringObject
    {
       // If a forwarding object has been specified, then forward this
       // notification on to that object.
-      if (_forwardObject != null)
+      if (forwardObject != null)
       {
-         _forwardObject.notifyWatchers(originalWatchedObject, modifiedWatchedObject, changeNotification, skipList, diag);
+         forwardObject.notifyWatchers(originalWatchedObject, modifiedWatchedObject, changeNotification, skipList, diag);
          return;
       }
       // If not, then we can do nothing in this base implementation,
@@ -150,14 +149,14 @@ public class MonitoringObject implements IMonitoringObject
          if (watchedObject != null) {
             // If two threads call stopMonitoringAllObjects at the same time, then
             // the object we just pulled out of the snapshot may no longer be in
-            // the _watchedObjects list, so double-check that this object is still
+            // the watchedObjects list, so double-check that this object is still
             // being watched, or we will report an 'unable to locate watcher' exception.
-            if (_watchedObjects.containsKey(watchedObject)) {
+            if (this.watchedObjects.containsKey(watchedObject)) {
                // Tell the watched object that we aren't watching it anymore,
                // even if we called registerAsWatcher multiple times.
-               watchedObject.unregisterAsWatcherAllInstances(_watchingProxy, diag);
+               watchedObject.unregisterAsWatcherAllInstances(watchingProxy, diag);
                // The call to unregisterAsWatcherAllInstances should have removed
-               // that element from our _watchedObjects list.
+               // that element from our watchedObjects list.
             }
          }
       }
@@ -179,17 +178,17 @@ public class MonitoringObject implements IMonitoringObject
          watchedObject = objects.remove(0);
          // Tell the watched object that we aren't watching it anymore,
          // but only decrement one count, not all Instances.
-         watchedObject.unregisterAsWatcher(_watchingProxy, diag);
+         watchedObject.unregisterAsWatcher(watchingProxy, diag);
       }
    }
 
    @Override
    public Vector<IMonitorableObject> getSnapShotOfWatchedObjects() {
       Vector<IMonitorableObject> retVect = new Vector<>();
-      synchronized(_watchedObjects) {
-         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(_lock_watchedObjects)) {
+      synchronized(watchedObjects) {
+         try (SemaphoreAutoTracker sat = new SemaphoreAutoTracker(lock_watchedObjects)) {
 
-            Enumeration<IMonitorableObject> objects = _watchedObjects.keys();
+            Enumeration<IMonitorableObject> objects = watchedObjects.keys();
             while (objects.hasMoreElements()) {
                retVect.add(objects.nextElement());
             }

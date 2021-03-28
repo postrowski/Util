@@ -2,17 +2,17 @@ package ostrowski.util;
 
 public class SemaphoreAutoTracker implements AutoCloseable
 {
-   private final Semaphore _semaphore;
+   private final Semaphore semaphore;
    public SemaphoreAutoTracker(Semaphore semaphore) {
-      this._semaphore = semaphore;
-      if (this._semaphore != null) {
-         this._semaphore.track();
+      this.semaphore = semaphore;
+      if (this.semaphore != null) {
+         this.semaphore.track();
       }
    }
    @Override
    public void close() {
-      if (this._semaphore != null) {
-         this._semaphore.untrack();
+      if (this.semaphore != null) {
+         this.semaphore.untrack();
       }
    }
 }
