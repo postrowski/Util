@@ -49,8 +49,10 @@ public class Helper
       GridData data = new GridData(GridData.FILL_HORIZONTAL);
       data.horizontalSpan = hSpan;
       combo.setLayoutData(data);
-      for (String name : entries) {
-         combo.add(name);
+      if (entries != null) {
+         for (String name : entries) {
+            combo.add(name);
+         }
       }
       if (combo.getChildren().length > 0) {
          combo.setText(combo.getItem(0));
